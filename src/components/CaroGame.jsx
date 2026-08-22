@@ -508,25 +508,15 @@ export default function CaroGame({ onBack }) {
         </div>
       </div>
 
-      {/* Main Game Layout: 2 Columns on Desktop */}
-      <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left: Big Crisp Canvas Board */}
-        <div className="lg:col-span-8 flex flex-col items-center">
-          <div className="w-full max-w-[580px] aspect-square bg-[#12141a] border border-[#3e4248] rounded-2xl overflow-hidden shadow-2xl relative">
-            <canvas
-              ref={canvasRef}
-              onClick={handleCanvasClick}
-              className="w-full h-full cursor-pointer touch-none block"
-            />
-          </div>
-        </div>
-
-        {/* Right Column: Interactive Bot Model, Battle Stats & Actions */}
-        <div className="lg:col-span-4 flex flex-col gap-4 w-full max-w-[580px] lg:max-w-none mx-auto">
-          {/* Animated Interactive Bot Character Model with 10s Taunts */}
-          <div className="w-full bg-[#1c1f27]/90 backdrop-blur-md border border-[#3e4248] rounded-3xl p-4 flex flex-col items-center shadow-lg">
+      {/* Main Game Layout: 2 Columns on Desktop, Mobile-Optimized Order */}
+      <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        {/* Mobile: Bot Model displayed clearly on top, Desktop: Right column */}
+        <div className="lg:col-span-4 lg:order-2 flex flex-col gap-3.5 w-full max-w-[580px] lg:max-w-none mx-auto">
+          {/* Animated Interactive Bot Character Model with Unique Difficulty Outfits */}
+          <div className="w-full bg-[#1c1f27]/90 backdrop-blur-md border border-[#3e4248] rounded-3xl p-3.5 sm:p-4 flex flex-col items-center shadow-lg">
             <BotCharacterModel
               emotion={botEmotion}
+              difficulty={difficulty}
               size="medium"
               botName={botConfig[difficulty].name}
               botElo={botConfig[difficulty].elo}
@@ -536,29 +526,29 @@ export default function CaroGame({ onBack }) {
           </div>
 
           {/* Player vs Match Stats */}
-          <div className="w-full grid grid-cols-2 gap-3">
+          <div className="w-full grid grid-cols-2 gap-2.5 sm:gap-3">
             {/* Player Card */}
-            <div className="bg-[#1c1f27] border border-[#3e4248] rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm">
+            <div className="bg-[#1c1f27] border border-[#3e4248] rounded-2xl p-3 flex flex-col items-center text-center shadow-sm">
               {profile?.avatar_url && (profile.avatar_url.startsWith('http') || profile.avatar_url.startsWith('/') || profile.avatar_url.startsWith('data:')) ? (
-                <img src={profile.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover mb-2 border border-sky-500/40" />
+                <img src={profile.avatar_url} alt="" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover mb-1.5 border border-sky-500/40" />
               ) : profile?.avatar_url ? (
-                <span className="w-8 h-8 rounded-full bg-sky-500/15 border border-sky-500/40 flex items-center justify-center text-lg mb-2 select-none">
+                <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-sky-500/15 border border-sky-500/40 flex items-center justify-center text-base sm:text-lg mb-1.5 select-none">
                   {profile.avatar_url}
                 </span>
               ) : (
-                <span className="w-8 h-8 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/40 flex items-center justify-center font-black text-sm mb-2 select-none">
+                <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/40 flex items-center justify-center font-black text-xs sm:text-sm mb-1.5 select-none">
                   X
                 </span>
               )}
               <span className="text-xs font-black text-slate-100 truncate w-full px-1">{profile?.username || 'Bạn'}</span>
-              <span className="text-[11px] text-amber-400 font-mono font-bold mt-0.5">{profile?.caro_elo || 1000} Elo</span>
+              <span className="text-[10px] sm:text-[11px] text-amber-400 font-mono font-bold mt-0.5">{profile?.caro_elo || 1000} Elo</span>
             </div>
 
             {/* Match Status */}
-            <div className="bg-[#1c1f27] border border-[#3e4248] rounded-2xl p-3.5 flex flex-col items-center justify-center text-center shadow-sm">
-              <span className="text-[10px] text-slate-500 font-mono uppercase font-bold block mb-1">TRẠNG THÁI</span>
+            <div className="bg-[#1c1f27] border border-[#3e4248] rounded-2xl p-3 flex flex-col items-center justify-center text-center shadow-sm">
+              <span className="text-[9px] sm:text-[10px] text-slate-500 font-mono uppercase font-bold block mb-0.5">TRẠNG THÁI</span>
               <span className="text-xs font-black text-sky-400 leading-tight">{statusText}</span>
-              <span className="text-[10px] text-slate-500 font-mono mt-1">{moveHistory.length} nước đi</span>
+              <span className="text-[9px] sm:text-[10px] text-slate-500 font-mono mt-0.5">{moveHistory.length} nước đi</span>
             </div>
           </div>
 
@@ -567,7 +557,7 @@ export default function CaroGame({ onBack }) {
             <button
               onClick={handleUndo}
               disabled={isGameOver || moveHistory.length === 0 || !playerTurn}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#1c1f27] hover:bg-[#242833] disabled:opacity-40 disabled:cursor-not-allowed border border-[#3e4248] text-slate-300 font-bold text-xs transition-all shadow-sm"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#1c1f27] hover:bg-[#242833] disabled:opacity-40 disabled:cursor-not-allowed border border-[#3e4248] text-slate-300 font-bold text-xs transition-all shadow-sm cursor-pointer"
             >
               <Undo2 className="w-4 h-4" />
               <span>Trùng sinh</span>
@@ -575,35 +565,47 @@ export default function CaroGame({ onBack }) {
 
             <button
               onClick={() => startNewGame(difficulty)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs transition-all shadow-sm"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs transition-all shadow-sm cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
-              <span>Đòng quy Vu Tận</span>
+              <span>Đồng quy Vu Tận</span>
             </button>
           </div>
 
           {/* Exit to Main Lobby */}
           <button
             onClick={onBack}
-            className="w-full py-2.5 rounded-xl bg-[#1c1f27] hover:bg-rose-500/10 border border-[#3e4248] hover:border-rose-500/30 text-slate-400 hover:text-rose-300 font-bold text-xs flex items-center justify-center gap-2 transition-all"
+            className="w-full py-2.5 rounded-xl bg-[#1c1f27] hover:bg-rose-500/10 border border-[#3e4248] hover:border-rose-500/30 text-slate-400 hover:text-rose-300 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
             <span>Thoát Ra Sảnh Chính</span>
           </button>
+        </div>
+
+        {/* Board Canvas: Left column on Desktop, Center on Mobile */}
+        <div className="lg:col-span-8 lg:order-1 flex flex-col items-center w-full">
+          <div className="w-full max-w-[580px] aspect-square bg-[#12141a] border border-[#3e4248] rounded-2xl overflow-hidden shadow-2xl relative">
+            <canvas
+              ref={canvasRef}
+              onClick={handleCanvasClick}
+              className="w-full h-full cursor-pointer touch-none block"
+            />
+          </div>
         </div>
       </div>
 
       {/* Match Result Modal with Character Model Highlight */}
       {matchResult && (
         <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="w-full max-w-sm bg-[#1c1f27] border border-[#3e4248] rounded-3xl p-6 text-center flex flex-col items-center gap-4 shadow-2xl relative overflow-hidden">
+          <div className="w-full max-w-sm bg-[#1c1f27] border border-[#3e4248] rounded-3xl p-5 sm:p-6 text-center flex flex-col items-center gap-3.5 shadow-2xl relative overflow-hidden">
             {/* Ambient result glow */}
             <div className={`absolute -top-12 left-1/2 -translate-x-1/2 w-40 h-28 rounded-full blur-3xl pointer-events-none ${matchResult.outcome === 'win' ? 'bg-emerald-500/25' : 'bg-rose-500/25'
               }`}></div>
 
-            {/* Prominent Animated Bot Character Model with Outcome Reaction */}
+            {/* Prominent Animated Bot Character Model with Outcome Reaction & Difficulty Outfit */}
             <BotCharacterModel
               emotion={matchResult.outcome === 'win' ? 'sad' : (matchResult.outcome === 'loss' ? 'happy' : 'taunt')}
+              difficulty={difficulty}
               size="large"
               botName={botConfig[difficulty].name}
               botElo={botConfig[difficulty].elo}
@@ -612,11 +614,11 @@ export default function CaroGame({ onBack }) {
             />
 
             <div>
-              <h3 className={`text-xl font-black tracking-tight ${matchResult.outcome === 'win' ? 'text-emerald-400' : matchResult.outcome === 'loss' ? 'text-rose-400' : 'text-slate-400'
+              <h3 className={`text-lg sm:text-xl font-black tracking-tight ${matchResult.outcome === 'win' ? 'text-emerald-400' : matchResult.outcome === 'loss' ? 'text-rose-400' : 'text-slate-400'
                 }`}>
                 {matchResult.outcome === 'win' ? 'CHIẾN THẮNG RỰC RỠ!' : matchResult.outcome === 'loss' ? 'BẠN ĐÃ THẤT BẠI!' : 'HÒA CỜ!'}
               </h3>
-              <p className="text-xs text-slate-400 font-medium mt-1">Kết quả đã được đồng bộ vào xếp hạng</p>
+              <p className="text-xs text-slate-400 font-medium mt-0.5">Kết quả đã được đồng bộ vào xếp hạng</p>
             </div>
 
             {/* Elo Change Pill */}

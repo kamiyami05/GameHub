@@ -70,9 +70,10 @@ const LOSE_PROGRESSION = [
 
 export default function BotCharacterModel({
   emotion = 'idle', // 'idle' | 'thinking' | 'taunt' | 'shocked' | 'happy' | 'sad'
+  difficulty = 'easy', // 'easy' (Đạo Sĩ) | 'hard' (Tiên Tôn) | 'impossible' (Ma Tôn)
   size = 'medium', // 'small' | 'medium' | 'large'
-  botName = 'Vô Cực Tiên Tôn',
-  botElo = 1200,
+  botName = 'Đạo Sĩ Gấu Trúc',
+  botElo = 800,
   showDialogue = true,
   autoTauntInterval = 10000 // 10 seconds
 }) {
@@ -205,38 +206,105 @@ export default function BotCharacterModel({
             </g>
           )}
 
-          {/* === 1. HALF-BODY UPPER TORSO & ANCIENT HANFU ROBE === */}
-          <g id="upper-torso">
-            <path
-              d="M 28 230 C 35 155, 60 135, 75 125 L 125 125 C 140 135, 165 155, 172 230 Z"
-              fill={emotion === 'sad' && loseStage === 3 ? '#451a23' : '#2e3e52'}
-              stroke="#1a2330"
-              strokeWidth="3"
-            />
+          {/* ==================== 1. UPPER TORSO & ROBE (3 OUTFITS) ==================== */}
+          {/* OUTFIT 1: ĐẠO SĨ GẤU TRÚC (Easy - Xanh Thẫm Mộc Mạc) */}
+          {difficulty === 'easy' && (
+            <g id="upper-torso-daosi">
+              <path
+                d="M 28 230 C 35 155, 60 135, 75 125 L 125 125 C 140 135, 165 155, 172 230 Z"
+                fill={emotion === 'sad' && loseStage === 3 ? '#451a23' : '#2e3e52'}
+                stroke="#1a2330"
+                strokeWidth="3"
+              />
+              <path
+                d="M 75 125 L 100 162 L 125 125 L 138 230 L 62 230 Z"
+                fill="#98a2b3"
+                stroke="#1a2330"
+                strokeWidth="2.5"
+              />
+              <path d="M 75 124 L 100 162 L 125 124" fill="none" stroke="#667085" strokeWidth="3" />
+              <path d="M 85 138 L 108 175" fill="none" stroke="#667085" strokeWidth="2" />
+              <rect x="68" y="195" width="64" height="15" rx="3" fill="#667085" stroke="#1a2330" strokeWidth="2.5" />
+              <circle cx="100" cy="202" r="7" fill="#e0f2fe" stroke="#0f172a" strokeWidth="1.5" />
+              <circle cx="100" cy="202" r="3" fill="#0f172a" />
+              <path d="M 98 209 L 98 226 M 102 209 L 102 226" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" />
+            </g>
+          )}
 
-            <path
-              d="M 75 125 L 100 162 L 125 125 L 138 230 L 62 230 Z"
-              fill="#98a2b3"
-              stroke="#1a2330"
-              strokeWidth="2.5"
-            />
+          {/* OUTFIT 2: VÔ CỰC TIÊN TÔN (Hard - Tiên Bào Bạch Ngân Viền Vàng Kim & Ngọc Bích) */}
+          {difficulty === 'hard' && (
+            <g id="upper-torso-tienton">
+              {/* Outer White Silk Robe */}
+              <path
+                d="M 24 230 C 32 150, 58 130, 75 120 L 125 120 C 142 130, 168 150, 176 230 Z"
+                fill={emotion === 'sad' && loseStage === 3 ? '#3b1d28' : '#f1f5f9'}
+                stroke="#cbd5e1"
+                strokeWidth="3"
+              />
+              {/* Gold & Cyan Dragon Embroideries on Shoulders */}
+              <path d="M 38 180 Q 55 160 70 185" fill="none" stroke="#f59e0b" strokeWidth="3" />
+              <path d="M 162 180 Q 145 160 130 185" fill="none" stroke="#f59e0b" strokeWidth="3" />
+              {/* Inner Royal Cyan/Gold Robe */}
+              <path
+                d="M 75 120 L 100 165 L 125 120 L 140 230 L 60 230 Z"
+                fill="#0284c7"
+                stroke="#0369a1"
+                strokeWidth="2.5"
+              />
+              {/* Golden Collar Borders */}
+              <path d="M 75 120 L 100 165 L 125 120" fill="none" stroke="#fbbf24" strokeWidth="4" />
+              <path d="M 85 135 L 108 178" fill="none" stroke="#fbbf24" strokeWidth="2.5" />
+              {/* Gold Waist Sash */}
+              <rect x="64" y="195" width="72" height="16" rx="3" fill="#fbbf24" stroke="#d97706" strokeWidth="2.5" />
+              {/* Yin-Yang Jade Seal */}
+              <circle cx="100" cy="203" r="9" fill="#38bdf8" stroke="#f59e0b" strokeWidth="2" />
+              <circle cx="100" cy="203" r="4" fill="#ffffff" />
+              <path d="M 96 211 L 96 228 M 104 211 L 104 228" stroke="#38bdf8" strokeWidth="3" strokeLinecap="round" />
+            </g>
+          )}
 
-            <path d="M 75 124 L 100 162 L 125 124" fill="none" stroke="#667085" strokeWidth="3" />
-            <path d="M 85 138 L 108 175" fill="none" stroke="#667085" strokeWidth="2" />
+          {/* OUTFIT 3: CỬU U MA TÔN (Impossible - Hắc Long Ma Bào Huyết Sắc & Gai Ma Vương) */}
+          {difficulty === 'impossible' && (
+            <g id="upper-torso-maton">
+              {/* Dark Spiked Demon Robe */}
+              <path
+                d="M 22 230 C 30 148, 55 125, 75 118 L 125 118 C 145 125, 170 148, 178 230 Z"
+                fill="#090a0f"
+                stroke="#dc2626"
+                strokeWidth="3.5"
+              />
+              {/* Sharp Crimson Shoulder Pads */}
+              <path d="M 25 170 L 45 140 L 65 175 Z" fill="#991b1b" stroke="#dc2626" strokeWidth="2" />
+              <path d="M 175 170 L 155 140 L 135 175 Z" fill="#991b1b" stroke="#dc2626" strokeWidth="2" />
+              {/* Inner Blood Crimson Robe */}
+              <path
+                d="M 75 118 L 100 166 L 125 118 L 142 230 L 58 230 Z"
+                fill="#7f1d1d"
+                stroke="#991b1b"
+                strokeWidth="2.5"
+              />
+              {/* Fiery Demon Collar Trim */}
+              <path d="M 75 118 L 100 166 L 125 118" fill="none" stroke="#ef4444" strokeWidth="4" />
+              <path d="M 85 132 L 108 178" fill="none" stroke="#ef4444" strokeWidth="2" />
+              {/* Black Scale Belt */}
+              <rect x="62" y="195" width="76" height="16" rx="3" fill="#18181b" stroke="#dc2626" strokeWidth="2.5" />
+              {/* Blood Ruby Demon Gem */}
+              <circle cx="100" cy="203" r="9" fill="#dc2626" stroke="#fca5a5" strokeWidth="2" />
+              <circle cx="100" cy="203" r="3.5" fill="#fef2f2" />
+              <path d="M 96 211 L 96 228 M 104 211 L 104 228" stroke="#dc2626" strokeWidth="3" strokeLinecap="round" />
+            </g>
+          )}
 
-            <rect x="68" y="195" width="64" height="15" rx="3" fill="#667085" stroke="#1a2330" strokeWidth="2.5" />
-            <circle cx="100" cy="202" r="7" fill="#e0f2fe" stroke="#0f172a" strokeWidth="1.5" />
-            <circle cx="100" cy="202" r="3" fill="#0f172a" />
-            <path d="M 98 209 L 98 226 M 102 209 L 102 226" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" />
-          </g>
-
-          {/* === 2. PANDA HEAD & ICONIC STRAW/FELT HAT === */}
+          {/* ==================== 2. PANDA HEAD & HEADGEAR (3 STYLES) ==================== */}
           <g id="head-group">
+            {/* Panda Ears */}
             <circle cx="56" cy="50" r="20" fill="#18181b" stroke="#09090b" strokeWidth="3" />
             <circle cx="144" cy="50" r="20" fill="#18181b" stroke="#09090b" strokeWidth="3" />
 
-            <ellipse cx="100" cy="56" rx="55" ry="12" fill="#d97706" opacity="0.3" />
+            {/* Hat / Crown Shadow */}
+            <ellipse cx="100" cy="56" rx="55" ry="12" fill={difficulty === 'impossible' ? '#dc2626' : '#d97706'} opacity="0.3" />
 
+            {/* Big Round Panda Face */}
             <ellipse 
               cx="100" 
               cy="85" 
@@ -247,24 +315,45 @@ export default function BotCharacterModel({
               strokeWidth="4" 
             />
 
-            <g id="hat">
-              <path
-                d="M 68 35 C 68 12, 132 12, 132 35 Z"
-                fill="#c68a35"
-                stroke="#09090b"
-                strokeWidth="3.5"
-              />
-              <path d="M 85 20 C 100 28, 115 20, 118 24" fill="none" stroke="#8c5817" strokeWidth="2.5" strokeLinecap="round" />
-              <path d="M 67 33 Q 100 38 133 33 L 132 36 Q 100 42 68 36 Z" fill="#8c5817" stroke="#09090b" strokeWidth="1" />
+            {/* --- HEADGEAR 1: NÓN CÓI ĐẠO SĨ (Easy) --- */}
+            {difficulty === 'easy' && (
+              <g id="hat-daosi">
+                <path d="M 68 35 C 68 12, 132 12, 132 35 Z" fill="#c68a35" stroke="#09090b" strokeWidth="3.5" />
+                <path d="M 85 20 C 100 28, 115 20, 118 24" fill="none" stroke="#8c5817" strokeWidth="2.5" strokeLinecap="round" />
+                <path d="M 67 33 Q 100 38 133 33 L 132 36 Q 100 42 68 36 Z" fill="#8c5817" stroke="#09090b" strokeWidth="1" />
+                <path d="M 32 46 C 30 32, 170 32, 168 46 C 170 65, 30 65, 32 46 Z" fill="#d8963c" stroke="#09090b" strokeWidth="3.5" />
+                <path d="M 52 38 L 56 46 L 50 44 Z" fill="#8c5817" />
+              </g>
+            )}
 
-              <path
-                d="M 32 46 C 30 32, 170 32, 168 46 C 170 65, 30 65, 32 46 Z"
-                fill="#d8963c"
-                stroke="#09090b"
-                strokeWidth="3.5"
-              />
-              <path d="M 52 38 L 56 46 L 50 44 Z" fill="#8c5817" />
-            </g>
+            {/* --- HEADGEAR 2: KIM QUAN TIÊN TÔN & TRÂM NGỌC (Hard) --- */}
+            {difficulty === 'hard' && (
+              <g id="crown-tienton">
+                {/* Daoist Topknot Bun */}
+                <circle cx="100" cy="22" r="16" fill="#18181b" stroke="#09090b" strokeWidth="2.5" />
+                {/* Jade Hairpin piercing through bun */}
+                <path d="M 60 22 L 140 22" stroke="#10b981" strokeWidth="5" strokeLinecap="round" />
+                <circle cx="140" cy="22" r="4.5" fill="#f59e0b" />
+                {/* Golden Celestial Crown */}
+                <path d="M 76 42 L 84 18 L 100 28 L 116 18 L 124 42 Z" fill="#fbbf24" stroke="#d97706" strokeWidth="3" />
+                {/* Glowing Third Eye Cyan Jade on forehead */}
+                <path d="M 100 50 L 105 58 L 100 66 L 95 58 Z" fill="#38bdf8" stroke="#0284c7" strokeWidth="1.5" />
+              </g>
+            )}
+
+            {/* --- HEADGEAR 3: MA SỪNG CỬU U & HUYẾT QUAN (Impossible) --- */}
+            {difficulty === 'impossible' && (
+              <g id="horns-maton">
+                {/* Left Curved Demon Horn */}
+                <path d="M 65 42 C 45 20, 30 0, 18 12 C 28 35, 52 48, 62 48 Z" fill="#7f1d1d" stroke="#dc2626" strokeWidth="3" />
+                {/* Right Curved Demon Horn */}
+                <path d="M 135 42 C 155 20, 170 0, 182 12 C 172 35, 148 48, 138 48 Z" fill="#7f1d1d" stroke="#dc2626" strokeWidth="3" />
+                {/* Dark Crimson Spiked Crown */}
+                <path d="M 72 44 L 80 20 L 100 34 L 120 20 L 128 44 Z" fill="#18181b" stroke="#ef4444" strokeWidth="3" />
+                {/* Burning Fiery Mark on Forehead */}
+                <path d="M 100 48 Q 94 60 100 68 Q 106 60 100 48 Z" fill="#ef4444" stroke="#b91c1c" strokeWidth="1" />
+              </g>
+            )}
 
             {/* === 3. HIGH FIDELITY MEME FACE EXPRESSIONS === */}
 
