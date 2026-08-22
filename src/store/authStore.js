@@ -130,16 +130,40 @@ export const useAuthStore = create((set, get) => ({
       return;
     }
     try {
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
-      if (error) throw error;
+        .maybeSingle();
+
+      if (!data) {
+        const defaultName = user.user_metadata?.full_name || user.user_metadata?.username || user.email?.split('@')[0] || 'Game Thủ';
+        const defaultAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || '🐼';
+        const { data: created, error: insertError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: user.id,
+            email: user.email,
+            username: defaultName,
+            avatar_url: defaultAvatar,
+            caro_elo: 1000,
+            caro_wins: 0,
+            caro_losses: 0,
+            caro_draws: 0,
+            caro_total_games: 0,
+            game_2048_highscore: 0,
+            minesweeper_wins: 0
+          })
+          .select()
+          .single();
+        if (!insertError && created) {
+          data = created;
+        }
+      }
+
       if (data) set({ profile: data });
     } catch (e) {
       console.warn('Profile fetch warning:', e);
-      set({ profile: getGuestProfile() });
     }
   },
 
@@ -151,14 +175,19 @@ export const useAuthStore = create((set, get) => ({
       set({ profile: guest });
       return;
     }
-    const { data, error } = await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', user.id)
-      .select()
-      .single();
-    if (error) throw error;
-    if (data) set({ profile: data });
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .upsert({ id: user.id, ...updates })
+        .select()
+        .single();
+      if (error) throw error;
+      if (data) set({ profile: data });
+    } catch (e) {
+      console.error('Update profile error:', e);
+      const current = get().profile;
+      set({ profile: { ...current, ...updates } });
+    }
   },
 
   // Record Caro Match Elo

@@ -1,11 +1,14 @@
 -- ==============================================================================
--- ARCADE HUB - SUPABASE DATABASE INITIALIZATION SCHEMA
+-- ARCADE HUB - SUPABASE DATABASE INITIALIZATION SCHEMA (FIXED PERMISSIONS)
 -- ==============================================================================
 -- Hướng dẫn: Copy toàn bộ đoạn script này dán vào SQL Editor trong Supabase Dashboard
--- rồi bấm nút "RUN" để tạo toàn bộ bảng, quyền bảo mật (RLS) và hàm tính điểm Elo.
+-- rồi bấm nút "RUN" để tạo toàn bộ bảng, cấp quyền (GRANT), RLS và hàm RPC.
 -- ==============================================================================
 
--- 1. BẢNG PROFILES (Lưu thông tin người dùng và thành tích tất cả các game)
+-- 1. CẤP QUYỀN USAGE TRÊN SCHEMA PUBLIC
+GRANT USAGE ON SCHEMA public TO postgres, anon, authenticated, service_role;
+
+-- 2. BẢNG PROFILES (Lưu thông tin người dùng và thành tích tất cả các game)
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   username TEXT,
@@ -31,7 +34,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   updated_at TIMESTAMPTZ DEFAULT timezone('utc'::TEXT, now()) NOT NULL
 );
 
--- 2. BẢNG LỊCH SỬ ĐẤU CỜ CARO
+-- 3. BẢNG LỊCH SỬ ĐẤU CỜ CARO
 CREATE TABLE IF NOT EXISTS public.caro_matches (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
@@ -44,7 +47,11 @@ CREATE TABLE IF NOT EXISTS public.caro_matches (
   created_at TIMESTAMPTZ DEFAULT timezone('utc'::TEXT, now()) NOT NULL
 );
 
--- 3. KÍCH HOẠT ROW LEVEL SECURITY (RLS)
+-- 4. CẤP QUYỀN BẢNG (GRANT PERMISSIONS - KHẮC PHỤC LỖI 401/42501 PERMISSION DENIED)
+GRANT ALL ON TABLE public.profiles TO postgres, anon, authenticated, service_role;
+GRANT ALL ON TABLE public.caro_matches TO postgres, anon, authenticated, service_role;
+
+-- 5. KÍCH HOẠT ROW LEVEL SECURITY (RLS)
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.caro_matches ENABLE ROW LEVEL SECURITY;
 
@@ -53,6 +60,11 @@ DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON public.profi
 CREATE POLICY "Public profiles are viewable by everyone" 
   ON public.profiles FOR SELECT 
   USING (true);
+
+DROP POLICY IF EXISTS "Users can insert their own profile" ON public.profiles;
+CREATE POLICY "Users can insert their own profile" 
+  ON public.profiles FOR INSERT 
+  WITH CHECK (auth.uid() = id);
 
 DROP POLICY IF EXISTS "Users can update their own profile" ON public.profiles;
 CREATE POLICY "Users can update their own profile" 
@@ -70,7 +82,7 @@ CREATE POLICY "Users can insert their own matches"
   ON public.caro_matches FOR INSERT 
   WITH CHECK (auth.uid() = user_id);
 
--- 4. TỰ ĐỘNG TẠO PROFILE KHI ĐĂNG KÝ EMAIL HOẶC GOOGLE OAUTH
+-- 6. TỰ ĐỘNG TẠO PROFILE KHI ĐĂNG KÝ EMAIL HOẶC GOOGLE OAUTH
 CREATE OR REPLACE FUNCTION public.handle_new_user() 
 RETURNS TRIGGER AS $$
 BEGIN
@@ -81,7 +93,8 @@ BEGIN
     COALESCE(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
     COALESCE(new.raw_user_meta_data->>'avatar_url', new.raw_user_meta_data->>'picture', ''),
     new.email
-  );
+  )
+  ON CONFLICT (id) DO NOTHING;
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -91,7 +104,7 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- 5. HÀM TÍNH ĐIỂM ELO VÀ CẬP NHẬT KẾT QUẢ TRẬN ĐẤU CARO (RPC)
+-- 7. HÀM TÍNH ĐIỂM ELO VÀ CẬP NHẬT KẾT QUẢ TRẬN ĐẤU CARO (RPC)
 CREATE OR REPLACE FUNCTION public.record_caro_result(
   p_difficulty TEXT,
   p_result TEXT,
@@ -176,7 +189,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 6. HÀM CẬP NHẬT ĐIỂM CAO GAME 2048 (RPC)
+-- 8. HÀM CẬP NHẬT ĐIỂM CAO GAME 2048 (RPC)
 CREATE OR REPLACE FUNCTION public.update_2048_score(
   p_score INTEGER
 )
@@ -207,7 +220,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 7. HÀM CẬP NHẬT THỜI GIAN THẮNG DÒ MÌN (RPC)
+-- 9. HÀM CẬP NHẬT THỜI GIAN THẮNG DÒ MÌN (RPC)
 CREATE OR REPLACE FUNCTION public.update_minesweeper_time(
   p_time_seconds INTEGER
 )
@@ -243,3 +256,8 @@ BEGIN
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 10. CẤP QUYỀN THỰC THI HÀM CHO CÁC ROLE
+GRANT EXECUTE ON FUNCTION public.record_caro_result(TEXT, TEXT, INTEGER) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.update_2048_score(INTEGER) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.update_minesweeper_time(INTEGER) TO anon, authenticated, service_role;
