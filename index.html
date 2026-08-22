@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Cờ Caro</title>
+    <style>
+        :root {
+            --board-size: 600px;
+            --cells: 15;
+        }
+
+        body {
+            font-family: "Segoe UI", sans-serif;
+            display: flex;
+            justify-content: center;
+            padding: 24px;
+            background: linear-gradient(120deg, #f0f4ff, #eafcff);
+        }
+
+        .wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        #board {
+            width: var(--board-size);
+            height: var(--board-size);
+            display: grid;
+            grid-template-columns: repeat(var(--cells), 1fr);
+            grid-template-rows: repeat(var(--cells), 1fr);
+            background: #fff;
+            border: 3px solid #2563eb;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+        }
+
+        .cell {
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        .cell:hover {
+            background: #e0f2fe;
+        }
+
+        .mark {
+            font-size: 20px;
+            font-weight: 700;
+            transform: scale(0);
+            animation: pop 0.25s forwards ease-out;
+        }
+
+        .mark.x {
+            color: #1d4ed8;
+            text-shadow: 0 0 6px rgba(29, 78, 216, 0.4);
+        }
+
+        .mark.o {
+            color: #dc2626;
+            text-shadow: 0 0 6px rgba(220, 38, 38, 0.4);
+        }
+
+        @keyframes pop {
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .win-highlight {
+            animation: blink 0.8s infinite alternate;
+        }
+
+        @keyframes blink {
+            from {
+                background: #fffbe6;
+            }
+
+            to {
+                background: #fde68a;
+            }
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: 0;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 3px 8px rgba(37, 99, 235, 0.3);
+            transition: transform 0.15s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        #status {
+            font-weight: 700;
+        }
+
+        /* Popup */
+        .modal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            animation: zoomIn 0.3s ease-out;
+        }
+
+        @keyframes zoomIn {
+            from {
+                transform: scale(0.7);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal h2 {
+            margin: 0 0 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <h2>Cờ Caro với Bot 🤖</h2>
+        <div id="board"></div>
+        <div class="controls">
+            <button id="resetBtn">🔄 Reset</button>
+        </div>
+        <div id="status"></div>
+    </div>
+
+    <!-- Popup -->
+    <div id="resultModal" class="modal">
+        <div class="modal-content">
+            <h2 id="resultText"></h2>
+            <button onclick="startNewGame()">Chơi lại</button>
+        </div>
+    </div>
+
+    <audio id="snd-move" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
+    <audio id="snd-win" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+    <audio id="snd-lose" src="https://actions.google.com/sounds/v1/cartoon/boing_pop.ogg"></audio>
+    <audio id="snd-draw" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg"></audio>
+
+    <script>
+        const SIZE = 15, WIN = 5, PLAYER = 'X', BOT = 'O';
+        let board = [], gameOver = false, playerTurn = true;
+
+        const boardEl = document.getElementById('board');
+        const statusEl = document.getElementById('status');
+        const modal = document.getElementById('resultModal');
+        const resultText = document.getElementById('resultText');
+        const sndMove = document.getElementById('snd-move');
+        const sndWin = document.getElementById('snd-win');
+        const sndLose = document.getElementById('snd-lose');
+        const sndDraw = document.getElementById('snd-draw');
+
+        function createBoardArray() { return Array.from({ length: SIZE }, () => Array(SIZE).fill(null)); }
+        function inBounds(r, c) { return r >= 0 && r < SIZE && c >= 0 && c < SIZE; }
+
+        function checkWinner(arr) {
+            const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
+            for (let r = 0; r < SIZE; r++)for (let c = 0; c < SIZE; c++) {
+                const v = arr[r][c]; if (!v) continue;
+                for (const [dr, dc] of dirs) {
+                    let cnt = 1, cells = [[r, c]];
+                    let rr = r + dr, cc = c + dc;
+                    while (inBounds(rr, cc) && arr[rr][cc] === v) { cells.push([rr, cc]); cnt++; rr += dr; cc += dc; }
+                    rr = r - dr; cc = c - dc;
+                    while (inBounds(rr, cc) && arr[rr][cc] === v) { cells.unshift([rr, cc]); cnt++; rr -= dr; cc -= dc; }
+                    if (cnt >= WIN) return { winner: v, cells };
+                }
+            }
+            if (arr.flat().every(x => x)) return { winner: 'tie', cells: [] };
+            return null;
+        }
+
+        function render() {
+            boardEl.innerHTML = '';
+            for (let r = 0; r < SIZE; r++)for (let c = 0; c < SIZE; c++) {
+                const cell = document.createElement('div'); cell.className = 'cell';
+                cell.dataset.r = r; cell.dataset.c = c;
+                if (board[r][c]) {
+                    const span = document.createElement('div'); span.className = 'mark ' + (board[r][c] === PLAYER ? 'x' : 'o');
+                    span.textContent = board[r][c]; cell.appendChild(span);
+                }
+                cell.onclick = onCellClick; boardEl.appendChild(cell);
+            }
+            const w = checkWinner(board);
+            if (w) {
+                gameOver = true;
+                if (w.winner === 'tie') { showModal('🤝 Hòa rồi!'); sndDraw.play(); }
+                else {
+                    showModal(w.winner === PLAYER ? '🎉 Bạn thắng!' : '😈 Bot thắng!');
+                    if (w.winner === PLAYER) sndWin.play(); else sndLose.play();
+                    for (const [r, c] of w.cells) { boardEl.children[r * SIZE + c].classList.add('win-highlight'); }
+                }
+            } else statusEl.textContent = playerTurn ? '👉 Lượt bạn (X)' : '⏳ Bot đang nghĩ...';
+        }
+
+        function onCellClick(e) {
+            if (gameOver || !playerTurn) return;
+            const r = +e.currentTarget.dataset.r, c = +e.currentTarget.dataset.c;
+            if (board[r][c]) return;
+            makeMove(r, c, PLAYER); sndMove.play(); playerTurn = false; render();
+            if (checkWinner(board)) return;
+            setTimeout(() => {
+                const move = botMove(); if (move) { makeMove(move.r, move.c, BOT); sndMove.play(); }
+                playerTurn = true; render();
+            }, 500);
+        }
+
+        function makeMove(r, c, w) { if (inBounds(r, c) && !board[r][c]) board[r][c] = w; }
+
+        // Bot thông minh hơn
+        function botMove() {
+            // 1. Nếu có thể thắng ngay
+            for (let r = 0; r < SIZE; r++)for (let c = 0; c < SIZE; c++)if (!board[r][c]) {
+                board[r][c] = BOT; if (checkWinner(board)?.winner === BOT) { board[r][c] = null; return { r, c }; }
+                board[r][c] = null;
+            }
+            // 2. Nếu player sắp thắng thì chặn
+            for (let r = 0; r < SIZE; r++)for (let c = 0; c < SIZE; c++)if (!board[r][c]) {
+                board[r][c] = PLAYER; if (checkWinner(board)?.winner === PLAYER) { board[r][c] = null; return { r, c }; }
+                board[r][c] = null;
+            }
+            // 3. Đánh giá điểm
+            let best = null, bestScore = -1e9;
+            for (let r = 0; r < SIZE; r++)for (let c = 0; c < SIZE; c++)if (!board[r][c]) {
+                board[r][c] = BOT;
+                let score = evaluateBoard(BOT) - evaluateBoard(PLAYER);
+                board[r][c] = null;
+                if (score > bestScore) { bestScore = score; best = { r, c }; }
+            }
+            // 4. Nếu không có gì thì chọn gần giữa
+            if (!best) best = { r: Math.floor(SIZE / 2), c: Math.floor(SIZE / 2) };
+            return best;
+        }
+
+        function evaluateBoard(sym) {
+            let score = 0; const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
+            for (let r = 0; r < SIZE; r++)for (let c = 0; c < SIZE; c++)if (board[r][c] === sym) {
+                for (const [dr, dc] of dirs) {
+                    let cnt = 1, blocked = 0, rr = r + dr, cc = c + dc;
+                    while (inBounds(rr, cc) && board[rr][cc] === sym) { cnt++; rr += dr; cc += dc; }
+                    if (!inBounds(rr, cc) || board[rr][cc] && (board[rr][cc] !== sym)) blocked++;
+                    rr = r - dr; cc = c - dc;
+                    while (inBounds(rr, cc) && board[rr][cc] === sym) { cnt++; rr -= dr; cc -= dc; }
+                    if (!inBounds(rr, cc) || board[rr][cc] && (board[rr][cc] !== sym)) blocked++;
+                    if (cnt >= 5) score += 100000;
+                    else if (cnt === 4 && blocked === 0) score += 10000;
+                    else if (cnt === 4 && blocked === 1) score += 500;
+                    else if (cnt === 3 && blocked === 0) score += 1000;
+                    else if (cnt === 3 && blocked === 1) score += 100;
+                    else if (cnt === 2 && blocked === 0) score += 50;
+                }
+            }
+            return score;
+        }
+
+        // Popup
+        function showModal(msg) {
+            resultText.textContent = msg;
+            modal.style.display = 'flex';
+        }
+        function hideModal() { modal.style.display = 'none'; }
+
+        document.getElementById('resetBtn').onclick = () => startNewGame();
+        function startNewGame() { board = createBoardArray(); gameOver = false; playerTurn = true; hideModal(); render(); }
+        startNewGame();
+    </script>
+</body>
+
+</html>
