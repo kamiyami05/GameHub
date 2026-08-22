@@ -55,8 +55,18 @@ export default function AuthModal({ isOpen, onClose }) {
     try {
       audio.playClick();
       if (tab === 'register') {
-        await signUp(email, password, username || email.split('@')[0]);
-        setSuccessMsg('Đăng ký thành công! Đang chuyển hướng...');
+        try {
+          await signUp(email, password, username || email.split('@')[0]);
+          setSuccessMsg('Đăng ký thành công!');
+        } catch (signupErr) {
+          // Nếu tài khoản đã được tạo trước đó, tự động đăng nhập luôn
+          try {
+            await signIn(email, password);
+            setSuccessMsg('Tài khoản đã tồn tại. Đã tự động đăng nhập thành công!');
+          } catch {
+            throw signupErr;
+          }
+        }
       } else {
         await signIn(email, password);
         setSuccessMsg('Đăng nhập thành công!');
