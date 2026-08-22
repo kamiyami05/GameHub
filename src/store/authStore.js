@@ -145,7 +145,12 @@ export const useAuthStore = create((set, get) => ({
 
   updateProfile: async (updates) => {
     const user = get().user;
-    if (!user || !isSupabaseConfigured()) return;
+    if (!user || !isSupabaseConfigured()) {
+      const guest = { ...get().profile, ...updates };
+      saveGuestProfile(guest);
+      set({ profile: guest });
+      return;
+    }
     const { data, error } = await supabase
       .from('profiles')
       .update(updates)

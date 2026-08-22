@@ -1,246 +1,245 @@
 -- ==============================================================================
--- ARCADE HUB - SUPABASE DATABASE SCHEMA (MULTI-GAME & GOOGLE OAUTH)
+-- ARCADE HUB - SUPABASE DATABASE INITIALIZATION SCHEMA
 -- ==============================================================================
--- Hướng dẫn: Dán toàn bộ script này vào SQL Editor trong Supabase Dashboard và bấm RUN.
--- Hỗ trợ: Google OAuth, Email Auth, Cờ Caro Elo, 2048 High Score, Dò Mìn Best Time
+-- Hướng dẫn: Copy toàn bộ đoạn script này dán vào SQL Editor trong Supabase Dashboard
+-- rồi bấm nút "RUN" để tạo toàn bộ bảng, quyền bảo mật (RLS) và hàm tính điểm Elo.
 -- ==============================================================================
 
--- 1. BẢNG PROFILES (Đa Game)
-create table if not exists public.profiles (
-  id uuid references auth.users on delete cascade primary key,
-  username text unique not null,
-  avatar_url text,
-  email text,
+-- 1. BẢNG PROFILES (Lưu thông tin người dùng và thành tích tất cả các game)
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  username TEXT,
+  full_name TEXT,
+  avatar_url TEXT,
+  email TEXT,
   
-  -- Cờ Caro
-  caro_elo integer default 1000 not null check (caro_elo >= 100),
-  caro_wins integer default 0 not null check (caro_wins >= 0),
-  caro_losses integer default 0 not null check (caro_losses >= 0),
-  caro_draws integer default 0 not null check (caro_draws >= 0),
-  caro_total_games integer default 0 not null check (caro_total_games >= 0),
-
-  -- 2048 Game
-  game_2048_highscore integer default 0 not null check (game_2048_highscore >= 0),
+  -- Thành tích Cờ Caro (Elo, thắng/thua)
+  caro_elo INTEGER DEFAULT 1000 NOT NULL,
+  caro_wins INTEGER DEFAULT 0 NOT NULL,
+  caro_losses INTEGER DEFAULT 0 NOT NULL,
+  caro_draws INTEGER DEFAULT 0 NOT NULL,
+  caro_total_games INTEGER DEFAULT 0 NOT NULL,
   
-  -- Dò Mìn (Thời gian tính bằng giây, thấp hơn là tốt hơn)
-  minesweeper_best_time integer default null check (minesweeper_best_time is null or minesweeper_best_time > 0),
-  minesweeper_wins integer default 0 not null check (minesweeper_wins >= 0),
-
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+  -- Điểm cao nhất game 2048
+  game_2048_highscore INTEGER DEFAULT 0 NOT NULL,
+  
+  -- Thời gian phá đảo Dò Mìn nhanh nhất (giây) & số ván thắng
+  minesweeper_best_time INTEGER DEFAULT NULL,
+  minesweeper_wins INTEGER DEFAULT 0 NOT NULL,
+  
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::TEXT, now()) NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT timezone('utc'::TEXT, now()) NOT NULL
 );
 
--- 2. BẢNG MATCH_HISTORY (Lịch sử các ván đấu)
-create table if not exists public.match_history (
-  id uuid default gen_random_uuid() primary key,
-  user_id uuid references public.profiles(id) on delete cascade not null,
-  game_type text not null check (game_type in ('caro', '2048', 'minesweeper')),
-  difficulty text default 'normal',
-  result text not null, -- 'win', 'loss', 'draw', 'completed', 'score'
-  score_value integer not null, -- elo change hoặc final score hoặc time in seconds
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+-- 2. BẢNG LỊCH SỬ ĐẤU CỜ CARO
+CREATE TABLE IF NOT EXISTS public.caro_matches (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  difficulty TEXT NOT NULL,       -- 'easy' | 'hard' | 'impossible'
+  result TEXT NOT NULL,           -- 'win' | 'loss' | 'draw'
+  moves_count INTEGER DEFAULT 0,
+  old_elo INTEGER NOT NULL,
+  new_elo INTEGER NOT NULL,
+  elo_change INTEGER NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::TEXT, now()) NOT NULL
 );
 
--- 3. ROW LEVEL SECURITY (RLS) POLICIES
-alter table public.profiles enable row level security;
-alter table public.match_history enable row level security;
+-- 3. KÍCH HOẠT ROW LEVEL SECURITY (RLS)
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.caro_matches ENABLE ROW LEVEL SECURITY;
 
--- Profiles: Cho phép xem công khai (để hiện Bảng Xếp Hạng)
-drop policy if exists "Public profiles are viewable by everyone" on public.profiles;
-create policy "Public profiles are viewable by everyone"
-  on public.profiles for select
-  using (true);
+-- Policy Profiles: Mọi người đều có thể xem (để hiển thị BXH), chính chủ mới được sửa
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON public.profiles;
+CREATE POLICY "Public profiles are viewable by everyone" 
+  ON public.profiles FOR SELECT 
+  USING (true);
 
--- Profiles: Người dùng chỉ được sửa thông tin của mình
-drop policy if exists "Users can update own profile" on public.profiles;
-create policy "Users can update own profile"
-  on public.profiles for update
-  using (auth.uid() = id);
+DROP POLICY IF EXISTS "Users can update their own profile" ON public.profiles;
+CREATE POLICY "Users can update their own profile" 
+  ON public.profiles FOR UPDATE 
+  USING (auth.uid() = id);
 
--- Match History: Cho phép xem công khai
-drop policy if exists "Match history viewable by everyone" on public.match_history;
-create policy "Match history viewable by everyone"
-  on public.match_history for select
-  using (true);
+-- Policy Matches: Mọi người có thể xem lịch sử, chỉ user đăng nhập mới được thêm ván đấu
+DROP POLICY IF EXISTS "Matches are viewable by everyone" ON public.caro_matches;
+CREATE POLICY "Matches are viewable by everyone" 
+  ON public.caro_matches FOR SELECT 
+  USING (true);
 
--- Match History: Chỉ insert qua RPC hoặc của chính mình
-drop policy if exists "Users can insert own matches" on public.match_history;
-create policy "Users can insert own matches"
-  on public.match_history for insert
-  with check (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can insert their own matches" ON public.caro_matches;
+CREATE POLICY "Users can insert their own matches" 
+  ON public.caro_matches FOR INSERT 
+  WITH CHECK (auth.uid() = user_id);
 
--- 4. TRIGGER TỰ ĐỘNG TẠO PROFILE TỪ GOOGLE OAUTH & EMAIL SIGNUP
-create or replace function public.handle_new_user()
-returns trigger as $$
-declare
-  v_username text;
-  v_avatar text;
-begin
-  -- Lấy tên hiển thị từ metadata của Google hoặc Email
-  v_username := coalesce(
-    new.raw_user_meta_data->>'full_name',
-    new.raw_user_meta_data->>'name',
-    new.raw_user_meta_data->>'username',
-    split_part(new.email, '@', 1)
+-- 4. TỰ ĐỘNG TẠO PROFILE KHI ĐĂNG KÝ EMAIL HOẶC GOOGLE OAUTH
+CREATE OR REPLACE FUNCTION public.handle_new_user() 
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, username, full_name, avatar_url, email)
+  VALUES (
+    new.id,
+    COALESCE(new.raw_user_meta_data->>'username', new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
+    COALESCE(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
+    COALESCE(new.raw_user_meta_data->>'avatar_url', new.raw_user_meta_data->>'picture', ''),
+    new.email
   );
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
-  -- Lấy avatar từ Google
-  v_avatar := coalesce(
-    new.raw_user_meta_data->>'avatar_url',
-    new.raw_user_meta_data->>'picture',
-    ''
-  );
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
-  -- Đảm bảo username không trùng lặp
-  if exists (select 1 from public.profiles where username = v_username) then
-    v_username := v_username || '_' || substr(new.id::text, 1, 4);
-  end if;
-
-  insert into public.profiles (id, username, email, avatar_url, caro_elo)
-  values (new.id, v_username, new.email, v_avatar, 1000)
-  on conflict (id) do update
-  set email = excluded.email,
-      avatar_url = case when profiles.avatar_url is null or profiles.avatar_url = '' then excluded.avatar_url else profiles.avatar_url end;
-
-  return new;
-end;
-$$ language plpgsql security definer;
-
-drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute procedure public.handle_new_user();
-
--- 5. RPC HÀM TÍNH ELO CỜ CARO (record_caro_result)
-create or replace function public.record_caro_result(
-  p_difficulty text,
-  p_result text,
-  p_moves_count integer
+-- 5. HÀM TÍNH ĐIỂM ELO VÀ CẬP NHẬT KẾT QUẢ TRẬN ĐẤU CARO (RPC)
+CREATE OR REPLACE FUNCTION public.record_caro_result(
+  p_difficulty TEXT,
+  p_result TEXT,
+  p_moves_count INTEGER
 )
-returns json as $$
-declare
-  v_user_id uuid;
-  v_current_elo integer;
-  v_bot_elo integer;
-  v_k_factor integer;
-  v_expected_score float;
-  v_actual_score float;
-  v_elo_change integer;
-  v_new_elo integer;
-  v_wins integer;
-  v_losses integer;
-  v_draws integer;
-  v_total_games integer;
-begin
+RETURNS JSONB AS $$
+DECLARE
+  v_user_id UUID;
+  v_current_elo INTEGER;
+  v_bot_elo INTEGER;
+  v_k INTEGER;
+  v_actual_score FLOAT;
+  v_expected_score FLOAT;
+  v_elo_change INTEGER;
+  v_new_elo INTEGER;
+BEGIN
   v_user_id := auth.uid();
-  if v_user_id is null then
-    raise exception 'Unauthorized: Bạn cần đăng nhập.';
-  end if;
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'Vui lòng đăng nhập để lưu kết quả';
+  END IF;
 
-  select caro_elo, caro_wins, caro_losses, caro_draws, caro_total_games
-  into v_current_elo, v_wins, v_losses, v_draws, v_total_games
-  from public.profiles
-  where id = v_user_id
-  for update;
+  -- Lấy Elo hiện tại của user
+  SELECT caro_elo INTO v_current_elo FROM public.profiles WHERE id = v_user_id;
+  IF v_current_elo IS NULL THEN
+    v_current_elo := 1000;
+  END IF;
 
-  if not found then
-    raise exception 'Không tìm thấy hồ sơ người chơi.';
-  end if;
+  -- Xác định Elo bot & Hệ số K
+  IF p_difficulty = 'easy' THEN
+    v_bot_elo := 800;
+    v_k := 16;
+  ELSIF p_difficulty = 'impossible' THEN
+    v_bot_elo := 1600;
+    v_k := 32;
+  ELSE -- 'hard'
+    v_bot_elo := 1200;
+    v_k := 24;
+  END IF;
 
-  if p_difficulty = 'easy' then v_bot_elo := 800; v_k_factor := 16;
-  elsif p_difficulty = 'hard' then v_bot_elo := 1200; v_k_factor := 24;
-  elsif p_difficulty = 'impossible' then v_bot_elo := 1600; v_k_factor := 32;
-  else v_bot_elo := 1000; v_k_factor := 24;
-  end if;
+  -- Điểm thực tế
+  IF p_result = 'win' THEN
+    v_actual_score := 1.0;
+  ELSIF p_result = 'draw' THEN
+    v_actual_score := 0.5;
+  ELSE
+    v_actual_score := 0.0;
+  END IF;
 
-  if p_result = 'win' then v_actual_score := 1.0; v_wins := v_wins + 1;
-  elsif p_result = 'draw' then v_actual_score := 0.5; v_draws := v_draws + 1;
-  elsif p_result = 'loss' then v_actual_score := 0.0; v_losses := v_losses + 1;
-  else raise exception 'Kết quả không hợp lệ.';
-  end if;
+  -- Công thức Elo chuẩn FIDE
+  v_expected_score := 1.0 / (1.0 + POWER(10.0, (v_bot_elo - v_current_elo)::FLOAT / 400.0));
+  v_elo_change := ROUND(v_k * (v_actual_score - v_expected_score));
 
-  v_total_games := v_total_games + 1;
-  v_expected_score := 1.0 / (1.0 + power(10.0, (v_bot_elo - v_current_elo)::float / 400.0));
-  v_elo_change := round(v_k_factor * (v_actual_score - v_expected_score));
+  -- Đảm bảo thắng có cộng điểm, thua có trừ điểm tối thiểu
+  IF p_result = 'win' AND v_elo_change <= 0 THEN
+    v_elo_change := 2;
+  ELSIF p_result = 'loss' AND v_elo_change >= 0 THEN
+    v_elo_change := -2;
+  END IF;
 
-  if p_result = 'win' and v_elo_change <= 0 then v_elo_change := 2;
-  elsif p_result = 'loss' and v_elo_change >= 0 then v_elo_change := -2;
-  end if;
+  v_new_elo := GREATEST(100, v_current_elo + v_elo_change);
 
-  v_new_elo := greatest(100, v_current_elo + v_elo_change);
+  -- Cập nhật profile
+  UPDATE public.profiles
+  SET 
+    caro_elo = v_new_elo,
+    caro_total_games = caro_total_games + 1,
+    caro_wins = CASE WHEN p_result = 'win' THEN caro_wins + 1 ELSE caro_wins END,
+    caro_losses = CASE WHEN p_result = 'loss' THEN caro_losses + 1 ELSE caro_losses END,
+    caro_draws = CASE WHEN p_result = 'draw' THEN caro_draws + 1 ELSE caro_draws END,
+    updated_at = timezone('utc'::TEXT, now())
+  WHERE id = v_user_id;
 
-  update public.profiles
-  set caro_elo = v_new_elo,
-      caro_wins = v_wins,
-      caro_losses = v_losses,
-      caro_draws = v_draws,
-      caro_total_games = v_total_games,
-      updated_at = now()
-  where id = v_user_id;
+  -- Lưu lịch sử ván cờ
+  INSERT INTO public.caro_matches (user_id, difficulty, result, moves_count, old_elo, new_elo, elo_change)
+  VALUES (v_user_id, p_difficulty, p_result, p_moves_count, v_current_elo, v_new_elo, v_elo_change);
 
-  insert into public.match_history (user_id, game_type, difficulty, result, score_value, created_at)
-  values (v_user_id, 'caro', p_difficulty, p_result, v_elo_change, now());
-
-  return json_build_object(
+  RETURN jsonb_build_object(
     'old_elo', v_current_elo,
     'new_elo', v_new_elo,
-    'elo_change', v_elo_change,
-    'wins', v_wins,
-    'losses', v_losses,
-    'draws', v_draws,
-    'total_games', v_total_games
+    'elo_change', v_elo_change
   );
-end;
-$$ language plpgsql security definer;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 6. RPC HÀM CẬP NHẬT HIGHSCORE 2048 (update_2048_score)
-create or replace function public.update_2048_score(p_score integer)
-returns json as $$
-declare
-  v_user_id uuid;
-  v_old_high integer;
-  v_new_high integer;
-begin
+-- 6. HÀM CẬP NHẬT ĐIỂM CAO GAME 2048 (RPC)
+CREATE OR REPLACE FUNCTION public.update_2048_score(
+  p_score INTEGER
+)
+RETURNS JSONB AS $$
+DECLARE
+  v_user_id UUID;
+  v_current_high INTEGER;
+  v_new_high INTEGER;
+BEGIN
   v_user_id := auth.uid();
-  if v_user_id is null then raise exception 'Unauthorized'; end if;
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'Vui lòng đăng nhập';
+  END IF;
 
-  select game_2048_highscore into v_old_high from public.profiles where id = v_user_id;
-  v_new_high := greatest(coalesce(v_old_high, 0), p_score);
+  SELECT game_2048_highscore INTO v_current_high FROM public.profiles WHERE id = v_user_id;
+  v_new_high := GREATEST(COALESCE(v_current_high, 0), p_score);
 
-  update public.profiles set game_2048_highscore = v_new_high, updated_at = now() where id = v_user_id;
-  insert into public.match_history (user_id, game_type, result, score_value, created_at)
-  values (v_user_id, '2048', 'score', p_score, now());
+  UPDATE public.profiles
+  SET 
+    game_2048_highscore = v_new_high,
+    updated_at = timezone('utc'::TEXT, now())
+  WHERE id = v_user_id;
 
-  return json_build_object('old_highscore', v_old_high, 'new_highscore', v_new_high, 'is_new_record', p_score > v_old_high);
-end;
-$$ language plpgsql security definer;
+  RETURN jsonb_build_object(
+    'old_highscore', v_current_high,
+    'new_highscore', v_new_high
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 7. RPC HÀM CẬP NHẬT THỜI GIAN DÒ MÌN (update_minesweeper_time)
-create or replace function public.update_minesweeper_time(p_time_seconds integer)
-returns json as $$
-declare
-  v_user_id uuid;
-  v_old_best integer;
-  v_new_best integer;
-  v_wins integer;
-begin
+-- 7. HÀM CẬP NHẬT THỜI GIAN THẮNG DÒ MÌN (RPC)
+CREATE OR REPLACE FUNCTION public.update_minesweeper_time(
+  p_time_seconds INTEGER
+)
+RETURNS JSONB AS $$
+DECLARE
+  v_user_id UUID;
+  v_current_best INTEGER;
+  v_new_best INTEGER;
+BEGIN
   v_user_id := auth.uid();
-  if v_user_id is null then raise exception 'Unauthorized'; end if;
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'Vui lòng đăng nhập';
+  END IF;
 
-  select minesweeper_best_time, minesweeper_wins into v_old_best, v_wins from public.profiles where id = v_user_id;
+  SELECT minesweeper_best_time INTO v_current_best FROM public.profiles WHERE id = v_user_id;
   
-  if v_old_best is null or p_time_seconds < v_old_best then
+  IF v_current_best IS NULL OR p_time_seconds < v_current_best THEN
     v_new_best := p_time_seconds;
-  else
-    v_new_best := v_old_best;
-  end if;
+  ELSE
+    v_new_best := v_current_best;
+  END IF;
 
-  v_wins := coalesce(v_wins, 0) + 1;
+  UPDATE public.profiles
+  SET 
+    minesweeper_best_time = v_new_best,
+    minesweeper_wins = minesweeper_wins + 1,
+    updated_at = timezone('utc'::TEXT, now())
+  WHERE id = v_user_id;
 
-  update public.profiles set minesweeper_best_time = v_new_best, minesweeper_wins = v_wins, updated_at = now() where id = v_user_id;
-  insert into public.match_history (user_id, game_type, result, score_value, created_at)
-  values (v_user_id, 'minesweeper', 'win', p_time_seconds, now());
-
-  return json_build_object('old_best_time', v_old_best, 'new_best_time', v_new_best, 'is_new_record', (v_old_best is null or p_time_seconds < v_old_best));
-end;
-$$ language plpgsql security definer;
+  RETURN jsonb_build_object(
+    'old_best_time', v_current_best,
+    'new_best_time', v_new_best
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
