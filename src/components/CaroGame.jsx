@@ -549,10 +549,18 @@ export default function CaroGame({ onBack }) {
           <div className="w-full grid grid-cols-2 gap-3">
             {/* Player Card */}
             <div className="bg-[#1c1f27] border border-[#3e4248] rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm">
-              <span className="w-8 h-8 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/40 flex items-center justify-center font-black text-sm mb-2">
-                X
-              </span>
-              <span className="text-xs font-black text-slate-100 truncate w-full">{profile?.username || 'Bạn'}</span>
+              {profile?.avatar_url && (profile.avatar_url.startsWith('http') || profile.avatar_url.startsWith('/') || profile.avatar_url.startsWith('data:')) ? (
+                <img src={profile.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover mb-2 border border-sky-500/40" />
+              ) : profile?.avatar_url ? (
+                <span className="w-8 h-8 rounded-full bg-sky-500/15 border border-sky-500/40 flex items-center justify-center text-lg mb-2 select-none">
+                  {profile.avatar_url}
+                </span>
+              ) : (
+                <span className="w-8 h-8 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/40 flex items-center justify-center font-black text-sm mb-2 select-none">
+                  X
+                </span>
+              )}
+              <span className="text-xs font-black text-slate-100 truncate w-full px-1">{profile?.username || 'Bạn'}</span>
               <span className="text-[11px] text-amber-400 font-mono font-bold mt-0.5">{profile?.caro_elo || 1000} Elo</span>
             </div>
 
