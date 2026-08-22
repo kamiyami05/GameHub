@@ -353,12 +353,30 @@
 
         .win-highlight {
             background-color: var(--win-bg) !important;
-            animation: blink 0.8s infinite alternate;
+            border-color: #f59e0b !important;
+            box-shadow: inset 0 0 10px rgba(245, 158, 11, 0.8), 0 0 15px rgba(245, 158, 11, 0.7);
+            z-index: 5;
+            animation: winGlow 0.7s infinite alternate ease-in-out;
         }
 
-        @keyframes blink {
-            from { opacity: 0.7; }
-            to { opacity: 1; }
+        .win-highlight .mark {
+            animation: winPopMark 0.7s infinite alternate ease-in-out;
+        }
+
+        @keyframes winGlow {
+            0% {
+                box-shadow: inset 0 0 8px rgba(245, 158, 11, 0.6), 0 0 10px rgba(245, 158, 11, 0.5);
+                transform: scale(0.97);
+            }
+            100% {
+                box-shadow: inset 0 0 18px rgba(245, 158, 11, 1), 0 0 24px rgba(245, 158, 11, 0.95);
+                transform: scale(1.03);
+            }
+        }
+
+        @keyframes winPopMark {
+            0% { transform: scale(0.95); }
+            100% { transform: scale(1.18); }
         }
 
         /* Modal */
@@ -487,6 +505,7 @@
         let board = [], gameOver = false, playerTurn = true;
         let moveHistory = [];
         let difficulty = 'hard'; // 'easy' | 'hard'
+        let winModalTimer = null;
 
         // Session Stats
         let stats = { total: 0, win: 0, loss: 0, draw: 0 };
@@ -503,36 +522,88 @@
         const resultText = document.getElementById('resultText');
         const resultSub = document.getElementById('resultSub');
 
-        // Web Audio Synthesizer (Chạy mượt mà offline không lo chết link audio)
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // Web Audio Synthesizer (Tối ưu 100% cho Mobile iOS Safari & Android Chrome)
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    audioCtx = new AudioContextClass();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        // Mở khóa phần cứng âm thanh trên Mobile ngay khi chạm lần đầu
+        function unlockAudio() {
+            const ctx = getAudioContext();
+            if (ctx) {
+                try {
+                    const buffer = ctx.createBuffer(1, 1, 22050);
+                    const source = ctx.createBufferSource();
+                    source.buffer = buffer;
+                    source.connect(ctx.destination);
+                    source.start(0);
+                } catch (e) { }
+            }
+        }
+
+        ['touchstart', 'touchend', 'pointerdown', 'click'].forEach(evt => {
+            window.addEventListener(evt, unlockAudio, { once: true, passive: true });
+        });
+
+        function vibrate(pattern = 25) {
+            if (navigator.vibrate) {
+                try { navigator.vibrate(pattern); } catch (e) { }
+            }
+        }
+
         function playTone(freq, type, duration) {
             try {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
+                const ctx = getAudioContext();
+                if (!ctx) return;
+                const now = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
                 osc.type = type;
-                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.frequency.setValueAtTime(freq, now);
+
+                gain.gain.setValueAtTime(0.18, now);
+                gain.gain.linearRampToValueAtTime(0.0001, now + duration);
+
                 osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + duration);
+                gain.connect(ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + duration + 0.03);
             } catch (e) { }
         }
 
         const sound = {
-            move: () => playTone(450, 'sine', 0.08),
+            move: () => {
+                playTone(480, 'sine', 0.08);
+                vibrate(25);
+            },
             win: () => {
                 setTimeout(() => playTone(523.25, 'triangle', 0.15), 0);
                 setTimeout(() => playTone(659.25, 'triangle', 0.15), 120);
                 setTimeout(() => playTone(783.99, 'triangle', 0.3), 240);
+                vibrate([60, 80, 120]);
             },
             lose: () => {
-                setTimeout(() => playTone(300, 'sawtooth', 0.15), 0);
+                setTimeout(() => playTone(320, 'sawtooth', 0.15), 0);
                 setTimeout(() => playTone(240, 'sawtooth', 0.25), 150);
+                vibrate(120);
             },
-            draw: () => playTone(350, 'square', 0.2)
+            draw: () => {
+                playTone(350, 'square', 0.2);
+                vibrate(50);
+            }
         };
 
         function createBoardArray() { return Array.from({ length: SIZE }, () => Array(SIZE).fill(null)); }
@@ -596,23 +667,39 @@
             if (w) {
                 gameOver = true;
                 stats.total++;
+                if (winModalTimer) { clearTimeout(winModalTimer); winModalTimer = null; }
+
                 if (w.winner === 'tie') {
                     stats.draw++;
-                    showModal('🤝 Hòa rồi!', 'Hai bên phòng thủ rất chặt chẽ!');
+                    statusEl.textContent = '🤝 Hòa cờ! (Đang tổng kết...)';
                     sound.draw();
+                    winModalTimer = setTimeout(() => {
+                        showModal('🤝 Hòa rồi!', 'Hai bên phòng thủ rất chặt chẽ!');
+                    }, 3000);
                 } else {
-                    if (w.winner === PLAYER) {
+                    const isPlayerWin = w.winner === PLAYER;
+                    if (isPlayerWin) {
                         stats.win++;
-                        showModal('🎉 Bạn thắng!', 'Nước đi xuất sắc vượt qua thuật toán của Bot!');
+                        statusEl.textContent = '🎉 Bạn thắng! (Đang tổng kết...)';
+                        turnDot.className = 'turn-dot x';
                         sound.win();
                     } else {
                         stats.loss++;
-                        showModal('🤖 Bot thắng!', 'Bot đã bắt được sơ hở, hãy thử lại nhé!');
+                        statusEl.textContent = '🤖 Bot thắng! (Đang tổng kết...)';
+                        turnDot.className = 'turn-dot o';
                         sound.lose();
                     }
                     for (const [r, c] of w.cells) {
                         boardEl.children[r * SIZE + c].classList.add('win-highlight');
                     }
+                    // Chờ khoảng 3 giây để người chơi nhìn rõ các ô thắng phát sáng rồi mới hiện thông báo
+                    winModalTimer = setTimeout(() => {
+                        if (isPlayerWin) {
+                            showModal('🎉 Bạn thắng!', 'Nước đi xuất sắc vượt qua thuật toán của Bot!');
+                        } else {
+                            showModal('🤖 Bot thắng!', 'Bot đã bắt được sơ hở, hãy thử lại nhé!');
+                        }
+                    }, 3000);
                 }
                 updateStatsUI();
             } else {
@@ -627,6 +714,7 @@
         }
 
         function onCellClick(e) {
+            unlockAudio();
             if (gameOver || !playerTurn) return;
             const r = +e.currentTarget.dataset.r, c = +e.currentTarget.dataset.c;
             if (board[r][c]) return;
@@ -659,6 +747,7 @@
         }
 
         function undoMove() {
+            if (winModalTimer) { clearTimeout(winModalTimer); winModalTimer = null; }
             if (gameOver || moveHistory.length === 0 || !playerTurn) return;
             if (moveHistory.length >= 2) {
                 const m1 = moveHistory.pop(); board[m1.r][m1.c] = null;
@@ -856,6 +945,7 @@
         function hideModal() { modal.style.display = 'none'; }
 
         function startNewGame() {
+            if (winModalTimer) { clearTimeout(winModalTimer); winModalTimer = null; }
             board = createBoardArray();
             moveHistory = [];
             gameOver = false;
