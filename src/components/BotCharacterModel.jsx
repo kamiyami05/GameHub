@@ -167,8 +167,8 @@ export default function BotCharacterModel({
       {/* PANDA HALF-BODY BUST CONTAINER */}
       <div 
         onClick={handlePoke}
-        title={emotion === 'sad' ? "Bấm liên tục để chọc tức Bổn Tọa!" : "Bấm vào Bổn Tọa để chọc tức / tương tác"}
-        className={`relative cursor-pointer group transition-all duration-300 ${
+        title={emotion === 'sad' ? "Bấm liên tục để chọc tức Bổn Tọa!" : "Bấm vào Bổn Tọa để tương tác"}
+        className={`relative cursor-pointer transition-all duration-300 ${
           isPoked 
             ? 'scale-110 rotate-3' 
             : (emotion === 'sad' && loseStage === 3)
@@ -176,35 +176,24 @@ export default function BotCharacterModel({
               : 'hover:scale-105 active:scale-95'
         }`}
       >
-        {/* Floating Animated Tap Indicator Badge on top-right */}
-        <div className="absolute -top-2.5 -right-2 z-20 pointer-events-none">
-          {emotion === 'sad' ? (
-            <div className="bg-gradient-to-r from-rose-500 to-red-600 text-white font-black text-[9px] px-2.5 py-0.5 rounded-full shadow-lg border border-white/20 flex items-center gap-1 animate-bounce">
+        {/* Floating Natural Cue ONLY during Result Screen when defeated (emotion === 'sad') */}
+        {emotion === 'sad' && (
+          <div className="absolute top-10 -right-4 sm:-right-8 z-30 pointer-events-none animate-bounce">
+            <div className="bg-gradient-to-r from-rose-500 to-red-600 text-white font-black text-[10px] px-2.5 py-1 rounded-full shadow-2xl border border-white/30 flex items-center gap-1.5 backdrop-blur-sm">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-300 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-400"></span>
               </span>
-              <span>Chọc tức ({loseStage}/3) 👆</span>
+              <span>Chọc tức ta ({loseStage}/3) 👆</span>
             </div>
-          ) : (
-            <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black text-[9px] px-2 py-0.5 rounded-full shadow-lg border border-amber-300/40 flex items-center gap-1 animate-bounce group-hover:scale-110 transition-transform">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
-              </span>
-              <span>Chạm ta 👆</span>
-            </div>
-          )}
-        </div>
-
-        {/* Outer Glow Ring on Hover */}
-        <div className="absolute inset-0 rounded-3xl group-hover:ring-2 ring-amber-400/40 transition-all pointer-events-none"></div>
+          </div>
+        )}
 
         <svg
           width={dim.w}
           height={dim.h}
           viewBox="0 0 200 230"
-          className="drop-shadow-[0_12px_28px_rgba(0,0,0,0.65)] group-hover:drop-shadow-[0_16px_32px_rgba(245,158,11,0.25)] transition-all"
+          className="drop-shadow-[0_12px_28px_rgba(0,0,0,0.65)]"
         >
           {/* Flame / Steam aura when ANGRY (Stage 3) */}
           {emotion === 'sad' && loseStage === 3 && (
@@ -422,21 +411,13 @@ export default function BotCharacterModel({
           </g>
         </svg>
 
-        {/* Character Title Badge & Interactive Hint */}
+        {/* Character Title Badge - Clean & Natural */}
         {size !== 'small' && (
-          <div className="mt-1 flex flex-col items-center gap-1">
-            <div className="flex items-center justify-center gap-1.5 px-3.5 py-1 bg-[#14161b] border border-[#3e4248] rounded-xl text-center shadow-md group-hover:border-amber-500/50 transition-colors">
-              <span className="text-[11px] font-black text-amber-400">
-                {emotion === 'sad' ? LOSE_PROGRESSION[loseStage - 1].title : `🐼 ${botName}`}
-              </span>
-              <span className="text-[10px] font-mono font-bold text-rose-400">({botElo} Elo)</span>
-            </div>
-
-            {/* Interactive hint subtitle */}
-            <span className="text-[9px] text-slate-400 font-semibold flex items-center gap-1 bg-[#14161b]/80 px-2 py-0.5 rounded-full border border-[#3e4248]/60 group-hover:text-amber-300 transition-colors">
-              <span>💡</span>
-              <span>Bấm vào để đàm đạo / chọc tức</span>
+          <div className="mt-1 flex items-center justify-center gap-1.5 px-3.5 py-1 bg-[#14161b] border border-[#3e4248] rounded-xl text-center shadow-md">
+            <span className="text-[11px] font-black text-amber-400">
+              {emotion === 'sad' ? LOSE_PROGRESSION[loseStage - 1].title : `🐼 ${botName}`}
             </span>
+            <span className="text-[10px] font-mono font-bold text-rose-400">({botElo} Elo)</span>
           </div>
         )}
       </div>
