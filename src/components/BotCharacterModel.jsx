@@ -154,7 +154,7 @@ export default function BotCharacterModel({
     <div className="flex flex-col items-center select-none relative">
       {/* Dynamic Tu Tien + GenZ Speech Bubble */}
       {showDialogue && (
-        <div className="relative mb-2 max-w-[280px] bg-[#1c1f27]/95 border border-[#3e4248] rounded-2xl px-3.5 py-2 text-xs text-slate-200 leading-relaxed font-medium shadow-2xl animate-fadeIn text-center">
+        <div className="relative mb-3 sm:mb-4 max-w-[280px] bg-[#1c1f27]/95 border border-[#3e4248] rounded-2xl px-3.5 py-2 text-xs text-slate-200 leading-relaxed font-medium shadow-2xl animate-fadeIn text-center z-10">
           <p className={`italic font-black ${
             emotion === 'sad' ? LOSE_PROGRESSION[loseStage - 1].quoteColor : 'text-amber-300'
           }`}>
@@ -168,7 +168,7 @@ export default function BotCharacterModel({
       {/* PANDA HALF-BODY BUST CONTAINER */}
       <div 
         onClick={handlePoke}
-        title={emotion === 'sad' ? "Bấm liên tục để chọc tức Bổn Tọa!" : "Bấm vào Bổn Tọa để tương tác"}
+        title={emotion === 'sad' ? "Nhấn vào Bổn Tọa!" : "Bấm vào Bổn Tọa để tương tác"}
         className={`relative cursor-pointer transition-all duration-300 ${
           isPoked 
             ? 'scale-110 rotate-3' 
@@ -179,13 +179,9 @@ export default function BotCharacterModel({
       >
         {/* Floating Natural Cue ONLY during Result Screen when defeated (emotion === 'sad') */}
         {emotion === 'sad' && (
-          <div className="absolute top-10 -right-4 sm:-right-8 z-30 pointer-events-none animate-bounce">
-            <div className="bg-gradient-to-r from-rose-500 to-red-600 text-white font-black text-[10px] px-2.5 py-1 rounded-full shadow-2xl border border-white/30 flex items-center gap-1.5 backdrop-blur-sm">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-300 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-400"></span>
-              </span>
-              <span>Chọc tức ta ({loseStage}/3) 👆</span>
+          <div className="absolute top-10 -right-3 sm:-right-6 z-30 pointer-events-none animate-bounce">
+            <div className="bg-gradient-to-r from-rose-500 to-red-600 text-white font-black text-[11px] px-2.5 py-1 rounded-full shadow-2xl border border-white/30 flex items-center gap-1 backdrop-blur-sm">
+              <span>Nhấn 👆</span>
             </div>
           </div>
         )}
@@ -504,7 +500,7 @@ export default function BotCharacterModel({
         {size !== 'small' && (
           <div className="mt-1 flex items-center justify-center gap-1.5 px-3.5 py-1 bg-[#14161b] border border-[#3e4248] rounded-xl text-center shadow-md">
             <span className="text-[11px] font-black text-amber-400">
-              {emotion === 'sad' ? LOSE_PROGRESSION[loseStage - 1].title : `🐼 ${botName}`}
+              🐼 {botName}
             </span>
             <span className="text-[10px] font-mono font-bold text-rose-400">({botElo} Elo)</span>
           </div>
