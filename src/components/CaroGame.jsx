@@ -100,28 +100,24 @@ export default function CaroGame({ onBack }) {
     setBoard(newBoard);
     setMoveHistory(newHistory);
     setPlayerTurn(true);
-    setWinningCells(null);
-    setBotEmotion('taunt');
-    particlesRef.current = [];
-    setStatusText('Lượt của bạn (X)');
-    audio.playClick();
+    setStatusText('Đã quay lại 1 nước! Lượt của bạn (X)');
   };
 
   const spawnParticles = (r, c, color) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
-    const padding = rect.width / (CARO_SIZE + 1);
-    const cellSize = (rect.width - 2 * padding) / (CARO_SIZE - 1);
-    const x = padding + c * cellSize;
-    const y = padding + r * cellSize;
+    const padding = 6;
+    const cellSize = (rect.width - 2 * padding) / CARO_SIZE;
+    const cx = padding + (c + 0.5) * cellSize;
+    const cy = padding + (r + 0.5) * cellSize;
 
-    for (let i = 0; i < 14; i++) {
+    for (let i = 0; i < 18; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const speed = 1.2 + Math.random() * 2.8;
+      const speed = 1.5 + Math.random() * 3.5;
       particlesRef.current.push({
-        x,
-        y,
+        x: cx,
+        y: cy,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
         color,
@@ -137,11 +133,11 @@ export default function CaroGame({ onBack }) {
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    const padding = rect.width / (CARO_SIZE + 1);
-    const cellSize = (rect.width - 2 * padding) / (CARO_SIZE - 1);
+    const padding = 6;
+    const cellSize = (rect.width - 2 * padding) / CARO_SIZE;
 
-    const c = Math.round((e.clientX - rect.left - padding) / cellSize);
-    const r = Math.round((e.clientY - rect.top - padding) / cellSize);
+    const c = Math.floor((e.clientX - rect.left - padding) / cellSize);
+    const r = Math.floor((e.clientY - rect.top - padding) / cellSize);
 
     if (r >= 0 && r < CARO_SIZE && c >= 0 && c < CARO_SIZE && board[r][c] === EMPTY) {
       const newBoard = board.map(row => [...row]);
@@ -157,14 +153,6 @@ export default function CaroGame({ onBack }) {
       if (winCheck) {
         handleGameEnd(winCheck, newHistory);
         return;
-      }
-
-      // Check player threat
-      const playerConsecutive = countMaxConsecutive(newBoard, r, c, PLAYER);
-      if (playerConsecutive >= 4) {
-        setBotEmotion('shocked');
-      } else {
-        setBotEmotion('thinking');
       }
 
       setPlayerTurn(false);
@@ -185,17 +173,10 @@ export default function CaroGame({ onBack }) {
             handleGameEnd(aiWinCheck, aiHistory);
             return;
           }
-
-          const botConsecutive = countMaxConsecutive(newBoard, botMove.r, botMove.c, AI);
-          if (botConsecutive >= 4) {
-            setBotEmotion('taunt');
-          } else {
-            setBotEmotion('idle');
-          }
         }
         setPlayerTurn(true);
-        setStatusText('Lượt của bạn (X)');
-      }, difficulty === 'easy' ? 200 : (difficulty === 'hard' ? 350 : 500));
+        setStatusText('Lượt của bạn! (X)');
+      }, 350);
     }
   };
 
@@ -206,13 +187,13 @@ export default function CaroGame({ onBack }) {
     let outcome = 'draw';
     if (result.winner === PLAYER) {
       outcome = 'win';
-      setBotEmotion('sad'); // Bot cries
+      setBotEmotion('sad');
       audio.playWin();
       setStatusText('🎉 Bạn thắng! (Đang tổng kết...)');
       confetti({ particleCount: 90, spread: 75, origin: { y: 0.6 } });
     } else if (result.winner === AI) {
       outcome = 'loss';
-      setBotEmotion('happy'); // Bot laughs
+      setBotEmotion('happy');
       audio.playLose();
       setStatusText('🤖 Bot thắng! (Đang tổng kết...)');
     } else {
@@ -228,7 +209,7 @@ export default function CaroGame({ onBack }) {
           eloChange: res.elo_change,
           newElo: res.new_elo
         });
-      } catch (e) {
+      } catch {
         setMatchResult({ outcome, eloChange: 0, newElo: profile?.caro_elo || 1000 });
       }
     }, 3000);
@@ -240,7 +221,7 @@ export default function CaroGame({ onBack }) {
     setLeaderboardData(data || []);
   };
 
-  // Canvas Engine 20x20
+  // Canvas Engine 20x20 Playing Inside Cell Squares
   useEffect(() => {
     if (viewMode !== 'playing') return;
 
@@ -264,50 +245,53 @@ export default function CaroGame({ onBack }) {
       ctx.scale(dpr, dpr);
 
       // Background
-      ctx.fillStyle = '#12141a';
+      ctx.fillStyle = '#101217';
       ctx.fillRect(0, 0, size, size);
 
-      const padding = size / (CARO_SIZE + 1);
-      const cellSize = (size - 2 * padding) / (CARO_SIZE - 1);
+      const padding = 6;
+      const cellSize = (size - 2 * padding) / CARO_SIZE;
 
-      // Sharp Grid Lines 20x20
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = '#272b36';
-      for (let i = 0; i < CARO_SIZE; i++) {
-        const pos = Math.round(padding + i * cellSize) + 0.5;
-        ctx.beginPath();
-        ctx.moveTo(padding, pos);
-        ctx.lineTo(padding + (CARO_SIZE - 1) * cellSize, pos);
-        ctx.stroke();
+      // 1. Render 20x20 Cell Squares Grid
+      for (let r = 0; r < CARO_SIZE; r++) {
+        for (let c = 0; c < CARO_SIZE; c++) {
+          const cellX = padding + c * cellSize;
+          const cellY = padding + r * cellSize;
 
-        ctx.beginPath();
-        ctx.moveTo(pos, padding);
-        ctx.lineTo(pos, padding + (CARO_SIZE - 1) * cellSize);
-        ctx.stroke();
+          // Subtle checkerboard pattern
+          ctx.fillStyle = (r + c) % 2 === 0 ? '#14161f' : '#11131a';
+          ctx.fillRect(cellX, cellY, cellSize, cellSize);
+
+          // Grid cell border
+          ctx.strokeStyle = '#222631';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(cellX + 0.5, cellY + 0.5, cellSize, cellSize);
+        }
       }
 
-      // Star Points on 20x20 Grid
+      // 2. Star Points on 20x20 Grid
       [3, 9, 15].forEach(r => {
         [3, 9, 15].forEach(c => {
           ctx.fillStyle = '#38bdf8';
           ctx.beginPath();
-          ctx.arc(padding + c * cellSize, padding + r * cellSize, 2.5, 0, Math.PI * 2);
+          ctx.arc(padding + (c + 0.5) * cellSize, padding + (r + 0.5) * cellSize, 2, 0, Math.PI * 2);
           ctx.fill();
         });
       });
 
-      // Render Stones
+      // 3. Render Pieces inside Cell Squares
       for (let r = 0; r < CARO_SIZE; r++) {
         for (let c = 0; c < CARO_SIZE; c++) {
-          const x = padding + c * cellSize;
-          const y = padding + r * cellSize;
-          const rad = cellSize * 0.34;
+          const x = padding + (c + 0.5) * cellSize;
+          const y = padding + (r + 0.5) * cellSize;
+          const rad = cellSize * 0.36;
 
           if (board[r][c] === PLAYER) {
             ctx.save();
             ctx.strokeStyle = '#38bdf8';
-            ctx.lineWidth = Math.max(2, cellSize * 0.14);
+            ctx.lineWidth = Math.max(2, cellSize * 0.16);
             ctx.lineCap = 'round';
+            ctx.shadowColor = '#38bdf8';
+            ctx.shadowBlur = 4;
             ctx.beginPath();
             ctx.moveTo(x - rad, y - rad); ctx.lineTo(x + rad, y + rad);
             ctx.moveTo(x + rad, y - rad); ctx.lineTo(x - rad, y + rad);
@@ -316,7 +300,9 @@ export default function CaroGame({ onBack }) {
           } else if (board[r][c] === AI) {
             ctx.save();
             ctx.strokeStyle = '#f43f5e';
-            ctx.lineWidth = Math.max(2, cellSize * 0.14);
+            ctx.lineWidth = Math.max(2, cellSize * 0.16);
+            ctx.shadowColor = '#f43f5e';
+            ctx.shadowBlur = 4;
             ctx.beginPath();
             ctx.arc(x, y, rad, 0, Math.PI * 2);
             ctx.stroke();
@@ -325,44 +311,48 @@ export default function CaroGame({ onBack }) {
         }
       }
 
-      // Last Move Highlight
+      // 4. Last Move Cell Highlight
       if (moveHistory.length > 0) {
         const last = moveHistory[moveHistory.length - 1];
+        const cellX = padding + last.c * cellSize;
+        const cellY = padding + last.r * cellSize;
         ctx.save();
         ctx.strokeStyle = '#f59e0b';
-        ctx.lineWidth = 1.8;
-        ctx.beginPath();
-        ctx.arc(padding + last.c * cellSize, padding + last.r * cellSize, cellSize * 0.44, 0, Math.PI * 2);
-        ctx.stroke();
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#f59e0b';
+        ctx.shadowBlur = 6;
+        ctx.strokeRect(cellX + 1, cellY + 1, cellSize - 2, cellSize - 2);
         ctx.restore();
       }
 
-      // 5 Winning Stones Beam
+      // 5. Winning 5 Cells Beam
       if (winningCells && winningCells.length >= 5) {
         ctx.save();
-        ctx.strokeStyle = '#10b981';
-        ctx.lineWidth = Math.max(3.5, cellSize * 0.2);
-        ctx.shadowColor = '#10b981';
-        ctx.shadowBlur = 10;
-        ctx.lineCap = 'round';
+        winningCells.forEach(cell => {
+          const cellX = padding + cell.c * cellSize;
+          const cellY = padding + cell.r * cellSize;
+          ctx.fillStyle = 'rgba(16, 185, 129, 0.35)';
+          ctx.fillRect(cellX, cellY, cellSize, cellSize);
+          ctx.strokeStyle = '#10b981';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(cellX + 0.5, cellY + 0.5, cellSize, cellSize);
+        });
 
-        ctx.beginPath();
         const first = winningCells[0];
         const last = winningCells[winningCells.length - 1];
-        ctx.moveTo(padding + first.c * cellSize, padding + first.r * cellSize);
-        ctx.lineTo(padding + last.c * cellSize, padding + last.r * cellSize);
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = Math.max(3.5, cellSize * 0.22);
+        ctx.shadowColor = '#10b981';
+        ctx.shadowBlur = 12;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(padding + (first.c + 0.5) * cellSize, padding + (first.r + 0.5) * cellSize);
+        ctx.lineTo(padding + (last.c + 0.5) * cellSize, padding + (last.r + 0.5) * cellSize);
         ctx.stroke();
-
-        ctx.fillStyle = 'rgba(16, 185, 129, 0.25)';
-        winningCells.forEach(cell => {
-          ctx.beginPath();
-          ctx.arc(padding + cell.c * cellSize, padding + cell.r * cellSize, cellSize * 0.46, 0, Math.PI * 2);
-          ctx.fill();
-        });
         ctx.restore();
       }
 
-      // Particles
+      // 6. Particles
       if (particlesRef.current.length > 0) {
         for (let i = particlesRef.current.length - 1; i >= 0; i--) {
           const p = particlesRef.current[i];

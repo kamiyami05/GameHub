@@ -40,12 +40,14 @@ export default function App() {
       {/* Dynamic Animated Ambient Background */}
       <AnimatedBackground theme={bgTheme} />
 
-      {/* Top Header Navbar */}
-      <Navbar
-        onNavigate={handleNavigate}
-        onOpenAuth={() => setIsAuthOpen(true)}
-        onOpenCoffee={() => { audio.playClick(); setIsCoffeeOpen(true); }}
-      />
+      {/* Top Header Navbar - ONLY SHOWN ON LOBBY (HOME) */}
+      {currentScreen === 'lobby' && (
+        <Navbar
+          onNavigate={handleNavigate}
+          onOpenAuth={() => setIsAuthOpen(true)}
+          onOpenCoffee={() => { audio.playClick(); setIsCoffeeOpen(true); }}
+        />
+      )}
 
       {/* Main View Content Area */}
       <main className="w-full flex-1 flex flex-col items-center justify-start">

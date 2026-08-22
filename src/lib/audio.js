@@ -27,7 +27,7 @@ class AudioManager {
       if (AudioContextClass) {
         this.ctx = new AudioContextClass();
         this.masterGain = this.ctx.createGain();
-        this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : 0.8, this.ctx.currentTime);
+        this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : 0.9, this.ctx.currentTime);
         this.masterGain.connect(this.ctx.destination);
 
         this.bgmGain = this.ctx.createGain();
@@ -55,7 +55,7 @@ class AudioManager {
     }
   }
 
-  playTone(freq, type = 'sine', duration = 0.1, gainVal = 0.2, delay = 0) {
+  playTone(freq, type = 'sine', duration = 0.1, gainVal = 0.4, delay = 0) {
     if (this.isMuted) return;
     const ctx = this.initContext();
     if (!ctx) return;
@@ -81,62 +81,67 @@ class AudioManager {
     }, delay);
   }
 
+  // Clear, rich tap sound for mobile speakers
   playClick() {
-    this.playTone(600, 'triangle', 0.04, 0.12);
-    this.vibrate(10);
+    this.playTone(720, 'triangle', 0.05, 0.45);
+    this.playTone(1100, 'sine', 0.04, 0.25, 8);
+    this.vibrate(12);
   }
 
+  // Rich wooden stone placement sound
   playMove(isPlayer = true) {
     if (isPlayer) {
-      this.playTone(520, 'sine', 0.06, 0.2);
-      this.playTone(380, 'triangle', 0.05, 0.1, 10);
+      this.playTone(560, 'sine', 0.07, 0.5);
+      this.playTone(420, 'triangle', 0.06, 0.35, 8);
       this.vibrate(18);
     } else {
-      this.playTone(420, 'sine', 0.06, 0.18);
-      this.playTone(280, 'triangle', 0.05, 0.1, 10);
+      this.playTone(440, 'sine', 0.07, 0.42);
+      this.playTone(320, 'triangle', 0.06, 0.3, 8);
     }
   }
 
+  // Softened win volume (0.35) so it doesn't blast or startle on phone speakers
   playWin() {
     if (this.isMuted) return;
     try {
       const audioEl = new Audio('/sounds/yay.mp3');
-      audioEl.volume = 0.9;
+      audioEl.volume = 0.35;
       const promise = audioEl.play();
       if (promise !== undefined) {
         promise.catch(() => {
-          this.playTone(523.25, 'triangle', 0.12, 0.22, 0);
-          this.playTone(659.25, 'triangle', 0.12, 0.22, 100);
-          this.playTone(783.99, 'triangle', 0.15, 0.25, 200);
-          this.playTone(1046.50, 'triangle', 0.35, 0.28, 320);
+          this.playTone(523.25, 'triangle', 0.12, 0.25, 0);
+          this.playTone(659.25, 'triangle', 0.12, 0.25, 100);
+          this.playTone(783.99, 'triangle', 0.15, 0.28, 200);
+          this.playTone(1046.50, 'triangle', 0.35, 0.3, 320);
         });
       }
     } catch (e) {
-      this.playTone(523.25, 'triangle', 0.12, 0.22, 0);
-      this.playTone(659.25, 'triangle', 0.12, 0.22, 100);
-      this.playTone(783.99, 'triangle', 0.15, 0.25, 200);
-      this.playTone(1046.50, 'triangle', 0.35, 0.28, 320);
+      this.playTone(523.25, 'triangle', 0.12, 0.25, 0);
+      this.playTone(659.25, 'triangle', 0.12, 0.25, 100);
+      this.playTone(783.99, 'triangle', 0.15, 0.28, 200);
+      this.playTone(1046.50, 'triangle', 0.35, 0.3, 320);
     }
     this.vibrate([40, 60, 100]);
   }
 
+  // Softened lose volume (0.35) so it doesn't blast or startle on phone speakers
   playLose() {
     if (this.isMuted) return;
     try {
       const audioEl = new Audio('/sounds/lose.mp3');
-      audioEl.volume = 0.9;
+      audioEl.volume = 0.35;
       const promise = audioEl.play();
       if (promise !== undefined) {
         promise.catch(() => {
-          this.playTone(340, 'sawtooth', 0.15, 0.18, 0);
-          this.playTone(260, 'sawtooth', 0.2, 0.2, 120);
-          this.playTone(190, 'sawtooth', 0.3, 0.22, 260);
+          this.playTone(340, 'sawtooth', 0.15, 0.22, 0);
+          this.playTone(260, 'sawtooth', 0.2, 0.22, 120);
+          this.playTone(190, 'sawtooth', 0.3, 0.25, 260);
         });
       }
     } catch (e) {
-      this.playTone(340, 'sawtooth', 0.15, 0.18, 0);
-      this.playTone(260, 'sawtooth', 0.2, 0.2, 120);
-      this.playTone(190, 'sawtooth', 0.3, 0.22, 260);
+      this.playTone(340, 'sawtooth', 0.15, 0.22, 0);
+      this.playTone(260, 'sawtooth', 0.2, 0.22, 120);
+      this.playTone(190, 'sawtooth', 0.3, 0.25, 260);
     }
     this.vibrate(80);
   }
@@ -145,7 +150,7 @@ class AudioManager {
     this.isMuted = !this.isMuted;
     localStorage.setItem('arcade_sfx_muted', this.isMuted);
     if (this.masterGain && this.ctx) {
-      this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : 0.8, this.ctx.currentTime);
+      this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : 0.9, this.ctx.currentTime);
     }
     return !this.isMuted;
   }
