@@ -508,10 +508,21 @@ export default function CaroGame({ onBack }) {
         </div>
       </div>
 
-      {/* Main Game Layout: 2 Columns on Desktop, Mobile-Optimized Order */}
+      {/* Main Game Layout: 2 Columns on Desktop, Board on Top on Mobile */}
       <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        {/* Mobile: Bot Model displayed clearly on top, Desktop: Right column */}
-        <div className="lg:col-span-4 lg:order-2 flex flex-col gap-3.5 w-full max-w-[580px] lg:max-w-none mx-auto">
+        {/* Left / Top: Big Crisp Canvas Board */}
+        <div className="lg:col-span-8 flex flex-col items-center w-full">
+          <div className="w-full max-w-[580px] aspect-square bg-[#12141a] border border-[#3e4248] rounded-2xl overflow-hidden shadow-2xl relative">
+            <canvas
+              ref={canvasRef}
+              onClick={handleCanvasClick}
+              className="w-full h-full cursor-pointer touch-none block"
+            />
+          </div>
+        </div>
+
+        {/* Right / Bottom Column: Interactive Bot Model, Battle Stats & Actions */}
+        <div className="lg:col-span-4 flex flex-col gap-3.5 w-full max-w-[580px] lg:max-w-none mx-auto">
           {/* Animated Interactive Bot Character Model with Unique Difficulty Outfits */}
           <div className="w-full bg-[#1c1f27]/90 backdrop-blur-md border border-[#3e4248] rounded-3xl p-3.5 sm:p-4 flex flex-col items-center shadow-lg">
             <BotCharacterModel
@@ -580,17 +591,6 @@ export default function CaroGame({ onBack }) {
             <LogOut className="w-4 h-4" />
             <span>Thoát Ra Sảnh Chính</span>
           </button>
-        </div>
-
-        {/* Board Canvas: Left column on Desktop, Center on Mobile */}
-        <div className="lg:col-span-8 lg:order-1 flex flex-col items-center w-full">
-          <div className="w-full max-w-[580px] aspect-square bg-[#12141a] border border-[#3e4248] rounded-2xl overflow-hidden shadow-2xl relative">
-            <canvas
-              ref={canvasRef}
-              onClick={handleCanvasClick}
-              className="w-full h-full cursor-pointer touch-none block"
-            />
-          </div>
         </div>
       </div>
 
