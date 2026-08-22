@@ -1,25 +1,35 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Clean and sanitize environment variables to prevent malformed URL crashes
+let rawUrl = (import.meta.env.VITE_SUPABASE_URL || '').trim().replace(/^['"]|['"]$/g, '');
+let rawKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim().replace(/^['"]|['"]$/g, '');
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn(
-    '⚠️ Supabase credentials missing. Copy .env.example to .env and fill in your values.'
-  );
+// Auto-prefix https:// if missing
+if (rawUrl && !rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
+  rawUrl = `https://${rawUrl}`;
 }
 
-export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder'
-);
+const isValidHttpUrl = (string) => {
+  if (!string) return false;
+  try {
+    const url = new URL(string);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
+const validUrl = isValidHttpUrl(rawUrl) ? rawUrl : 'https://placeholder-project.supabase.co';
+const validKey = rawKey && rawKey.length > 10 ? rawKey : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder';
+
+export const supabase = createClient(validUrl, validKey);
 
 export function isSupabaseConfigured() {
-  return !!(
-    supabaseUrl &&
-    supabaseAnonKey &&
-    supabaseUrl !== 'https://placeholder.supabase.co' &&
-    supabaseUrl !== 'https://your-project.supabase.co'
+  return (
+    isValidHttpUrl(rawUrl) &&
+    rawKey.length > 20 &&
+    !rawUrl.includes('placeholder') &&
+    !rawUrl.includes('your-project')
   );
 }
 
