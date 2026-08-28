@@ -38,7 +38,7 @@ const XIANXIA_QUOTES = {
   ]
 };
 
-// 3 Cảm xúc khi thua
+// 3 Cảm xúc khi thua (Buồn -> Khóc -> Tức giận)
 const LOSE_PROGRESSION = [
   {
     stage: 1,
@@ -47,7 +47,7 @@ const LOSE_PROGRESSION = [
   },
   {
     stage: 2,
-    dialogue: 'Hu hu hu! Trừ mất điểm Elo rồi! 😭😭',
+    dialogue: 'Hu hu hu! Bị trừ điểm Elo rồi! 😭😭',
     quoteColor: 'text-sky-300'
   },
   {
@@ -95,7 +95,7 @@ export default function BotCharacterModel({
         if (emotion !== 'happy' && emotion !== 'sad') {
           setCurrentEmotion(emotion || 'idle');
         }
-      }, 4000);
+      }, 3500);
     }, autoTauntInterval);
 
     return () => clearInterval(interval);
@@ -112,7 +112,7 @@ export default function BotCharacterModel({
         setDialogue(pInfo.dialogue);
         return nextStage;
       });
-      setTimeout(() => setIsPoked(false), 300);
+      setTimeout(() => setIsPoked(false), 250);
       return;
     }
 
@@ -129,7 +129,7 @@ export default function BotCharacterModel({
   const getDimensions = () => {
     switch (size) {
       case 'small': return { w: 110, h: 130 };
-      case 'large': return { w: 200, h: 230 };
+      case 'large': return { w: 190, h: 220 };
       default: return { w: 140, h: 165 };
     }
   };
@@ -140,7 +140,7 @@ export default function BotCharacterModel({
     <div className="flex flex-col items-center select-none relative">
       {/* Speech Bubble */}
       {showDialogue && (
-        <div className="relative mb-2 max-w-[240px] bg-[#14161f] border border-[#232734] rounded-xl px-3 py-1.5 text-xs text-slate-200 font-medium text-center z-10">
+        <div className="relative mb-2 max-w-[240px] bg-[#14161f]/95 border border-[#232734] rounded-xl px-3 py-1.5 text-xs text-slate-200 font-medium text-center z-10 shadow-md">
           <p className={`font-semibold ${
             emotion === 'sad' ? LOSE_PROGRESSION[loseStage - 1].quoteColor : 'text-slate-200'
           }`}>
@@ -150,45 +150,86 @@ export default function BotCharacterModel({
         </div>
       )}
 
-      {/* Bot SVG Bust */}
+      {/* Bot Container */}
       <div 
         onClick={handlePoke}
         title="Nhấn vào để tương tác"
-        className={`relative cursor-pointer transition-transform duration-200 ${
+        className={`relative cursor-pointer transition-all duration-200 ${
           isPoked 
-            ? 'scale-105 rotate-2' 
-            : 'hover:scale-102 active:scale-95'
+            ? 'scale-105 -rotate-1' 
+            : emotion === 'sad' && loseStage === 3
+              ? 'animate-bounce'
+              : 'hover:scale-[1.02] active:scale-95'
         }`}
       >
-        {/* Simple 'Nhấn 👆' cue only when defeated */}
+        {/* ================= STYLISH FLOATING INTERACTIVE POKE BUTTON ================= */}
         {emotion === 'sad' && (
-          <div className="absolute top-6 -right-2 z-30 pointer-events-none animate-bounce">
-            <div className="bg-rose-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full border border-white/20 flex items-center gap-1 shadow-md">
-              <span>Nhấn 👆</span>
+          <div className="absolute -top-1 -right-3 sm:-right-5 z-30 pointer-events-none animate-bounce">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-rose-500/90 to-amber-500/90 text-white font-bold text-[11px] shadow-lg border border-white/30 backdrop-blur-md">
+              <span className="text-xs">👆</span>
+              <span>Nhấn</span>
+              {/* 3 Interactive Stage Indicator Dots */}
+              <div className="flex items-center gap-0.5 ml-0.5">
+                <span className={`w-1.5 h-1.5 rounded-full ${loseStage >= 1 ? 'bg-white' : 'bg-white/40'}`} />
+                <span className={`w-1.5 h-1.5 rounded-full ${loseStage >= 2 ? 'bg-white' : 'bg-white/40'}`} />
+                <span className={`w-1.5 h-1.5 rounded-full ${loseStage >= 3 ? 'bg-amber-300 animate-ping' : 'bg-white/40'}`} />
+              </div>
             </div>
           </div>
         )}
 
+        {/* SVG Vector Bot Character */}
         <svg
           width={dim.w}
           height={dim.h}
           viewBox="0 0 200 230"
+          className="drop-shadow-md"
         >
-          {/* Flame aura when ANGRY */}
+          <defs>
+            {/* Gradients */}
+            <linearGradient id="robe-daosi" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#2c3647" />
+              <stop offset="100%" stopColor="#1e2430" />
+            </linearGradient>
+            <linearGradient id="robe-tienton" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f8fafc" />
+              <stop offset="100%" stopColor="#cbd5e1" />
+            </linearGradient>
+            <linearGradient id="robe-maton" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#1a1c24" />
+              <stop offset="100%" stopColor="#0c0d12" />
+            </linearGradient>
+            <linearGradient id="hat-straw" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#d97706" />
+              <stop offset="100%" stopColor="#92400e" />
+            </linearGradient>
+            <linearGradient id="gold-crown" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#fcd34d" />
+              <stop offset="100%" stopColor="#d97706" />
+            </linearGradient>
+            <linearGradient id="demon-horns" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#ef4444" />
+              <stop offset="100%" stopColor="#7f1d1d" />
+            </linearGradient>
+          </defs>
+
+          {/* Flame aura when ANGRY (Stage 3) */}
           {emotion === 'sad' && loseStage === 3 && (
             <g id="anger-flames" className="animate-pulse">
-              <path d="M 40 25 Q 30 5 45 12 Q 55 -5 60 20 Z" fill="#ef4444" opacity="0.8" />
-              <path d="M 160 25 Q 170 5 155 12 Q 145 -5 140 20 Z" fill="#ef4444" opacity="0.8" />
-              <path d="M 90 10 Q 100 -8 110 10 Z" fill="#f97316" opacity="0.85" />
+              <path d="M 35 25 Q 25 5 40 12 Q 50 -5 55 20 Z" fill="#ef4444" opacity="0.9" />
+              <path d="M 165 25 Q 175 5 160 12 Q 150 -5 145 20 Z" fill="#ef4444" opacity="0.9" />
+              <path d="M 90 8 Q 100 -10 110 8 Z" fill="#f97316" opacity="0.9" />
+              <path d="M 140 38 L 150 42 M 142 46 L 148 34" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" />
             </g>
           )}
 
-          {/* Torso */}
+          {/* ================= 1. TORSO & OUTFITS ================= */}
+          {/* OUTFIT 1: ĐẠO SĨ GẤU TRÚC */}
           {difficulty === 'easy' && (
             <g id="upper-torso-daosi">
               <path
                 d="M 28 230 C 35 155, 60 135, 75 125 L 125 125 C 140 135, 165 155, 172 230 Z"
-                fill={emotion === 'sad' && loseStage === 3 ? '#3f1c24' : '#232c3d'}
+                fill={emotion === 'sad' && loseStage === 3 ? '#3f1c24' : 'url(#robe-daosi)'}
                 stroke="#161c28"
                 strokeWidth="2.5"
               />
@@ -203,11 +244,12 @@ export default function BotCharacterModel({
             </g>
           )}
 
+          {/* OUTFIT 2: VÔ CỰC TIÊN TÔN */}
           {difficulty === 'hard' && (
             <g id="upper-torso-tienton">
               <path
                 d="M 24 230 C 32 150, 58 130, 75 120 L 125 120 C 142 130, 168 150, 176 230 Z"
-                fill={emotion === 'sad' && loseStage === 3 ? '#3f1c24' : '#e2e8f0'}
+                fill={emotion === 'sad' && loseStage === 3 ? '#3f1c24' : 'url(#robe-tienton)'}
                 stroke="#94a3b8"
                 strokeWidth="2.5"
               />
@@ -223,11 +265,12 @@ export default function BotCharacterModel({
             </g>
           )}
 
+          {/* OUTFIT 3: CỬU U MA TÔN */}
           {difficulty === 'impossible' && (
             <g id="upper-torso-maton">
               <path
                 d="M 22 230 C 30 148, 55 125, 75 118 L 125 118 C 145 125, 170 148, 178 230 Z"
-                fill="#0f1118"
+                fill={emotion === 'sad' && loseStage === 3 ? '#2a0e14' : 'url(#robe-maton)'}
                 stroke="#dc2626"
                 strokeWidth="2.5"
               />
@@ -244,11 +287,13 @@ export default function BotCharacterModel({
             </g>
           )}
 
-          {/* Head & Headgear */}
+          {/* ================= 2. HEAD & HEADGEAR ================= */}
           <g id="head-group">
+            {/* Panda Ears */}
             <circle cx="56" cy="50" r="20" fill="#18181b" stroke="#09090b" strokeWidth="2.5" />
             <circle cx="144" cy="50" r="20" fill="#18181b" stroke="#09090b" strokeWidth="2.5" />
 
+            {/* Panda Face */}
             <ellipse 
               cx="100" 
               cy="85" 
@@ -259,31 +304,38 @@ export default function BotCharacterModel({
               strokeWidth="3.5" 
             />
 
-            {/* Hat / Crown */}
+            {/* --- Headgear 1: Nón cói Đạo Sĩ --- */}
             {difficulty === 'easy' && (
               <g id="hat-daosi">
-                <path d="M 68 35 C 68 12, 132 12, 132 35 Z" fill="#c68a35" stroke="#09090b" strokeWidth="3" />
-                <path d="M 32 46 C 30 32, 170 32, 168 46 C 170 65, 30 65, 32 46 Z" fill="#d8963c" stroke="#09090b" strokeWidth="3" />
+                <path d="M 68 35 C 68 12, 132 12, 132 35 Z" fill="url(#hat-straw)" stroke="#09090b" strokeWidth="3" />
+                <path d="M 32 46 C 30 32, 170 32, 168 46 C 170 65, 30 65, 32 46 Z" fill="url(#hat-straw)" stroke="#09090b" strokeWidth="3" />
+                <path d="M 52 38 L 56 46 L 50 44 Z" fill="#78350f" />
               </g>
             )}
 
+            {/* --- Headgear 2: Kim Quan Tiên Tôn --- */}
             {difficulty === 'hard' && (
               <g id="crown-tienton">
                 <circle cx="100" cy="22" r="16" fill="#18181b" stroke="#09090b" strokeWidth="2" />
                 <path d="M 60 22 L 140 22" stroke="#10b981" strokeWidth="4" strokeLinecap="round" />
-                <path d="M 76 42 L 84 18 L 100 28 L 116 18 L 124 42 Z" fill="#fbbf24" stroke="#d97706" strokeWidth="2.5" />
+                <circle cx="140" cy="22" r="4" fill="#f59e0b" />
+                <path d="M 76 42 L 84 18 L 100 28 L 116 18 L 124 42 Z" fill="url(#gold-crown)" stroke="#d97706" strokeWidth="2.5" />
+                <path d="M 100 50 L 104 56 L 100 62 L 96 56 Z" fill="#38bdf8" />
               </g>
             )}
 
+            {/* --- Headgear 3: Ma Sừng Ma Tôn --- */}
             {difficulty === 'impossible' && (
               <g id="horns-maton">
-                <path d="M 65 42 C 45 20, 30 0, 18 12 C 28 35, 52 48, 62 48 Z" fill="#7f1d1d" stroke="#dc2626" strokeWidth="2.5" />
-                <path d="M 135 42 C 155 20, 170 0, 182 12 C 172 35, 148 48, 138 48 Z" fill="#7f1d1d" stroke="#dc2626" strokeWidth="2.5" />
+                <path d="M 65 42 C 45 20, 30 0, 18 12 C 28 35, 52 48, 62 48 Z" fill="url(#demon-horns)" stroke="#dc2626" strokeWidth="2.5" />
+                <path d="M 135 42 C 155 20, 170 0, 182 12 C 172 35, 148 48, 138 48 Z" fill="url(#demon-horns)" stroke="#dc2626" strokeWidth="2.5" />
                 <path d="M 72 44 L 80 20 L 100 34 L 120 20 L 128 44 Z" fill="#18181b" stroke="#ef4444" strokeWidth="2.5" />
+                <path d="M 100 50 Q 94 60 100 66 Q 106 60 100 50 Z" fill="#ef4444" />
               </g>
             )}
 
-            {/* Expressions */}
+            {/* ================= 3. MEME FACIAL EXPRESSIONS ================= */}
+            {/* TAUNT / DEFAULT */}
             {currentEmotion === 'taunt' && (
               <g id="face-taunt">
                 <path d="M 68 70 L 86 64" stroke="#000000" strokeWidth="3.5" strokeLinecap="round" />
@@ -295,6 +347,7 @@ export default function BotCharacterModel({
               </g>
             )}
 
+            {/* HAPPY / LAUGH */}
             {currentEmotion === 'happy' && (
               <g id="face-happy">
                 <path d="M 70 74 Q 80 64 90 74" fill="none" stroke="#000000" strokeWidth="3.5" strokeLinecap="round" />
@@ -304,8 +357,10 @@ export default function BotCharacterModel({
               </g>
             )}
 
+            {/* SAD LOSE PROGRESSION (Buồn -> Khóc -> Tức giận) */}
             {emotion === 'sad' && (
               <g id="face-lose-progression">
+                {/* Stage 1: Buồn */}
                 {loseStage === 1 && (
                   <g>
                     <path d="M 68 62 Q 78 72 88 62" fill="none" stroke="#000000" strokeWidth="3" strokeLinecap="round" />
@@ -313,29 +368,37 @@ export default function BotCharacterModel({
                     <circle cx="78" cy="76" r="4.5" fill="#000000" />
                     <circle cx="122" cy="76" r="4.5" fill="#000000" />
                     <path d="M 85 106 Q 100 94 115 106" fill="none" stroke="#000000" strokeWidth="3" strokeLinecap="round" />
+                    <circle cx="128" cy="88" r="2.5" fill="#38bdf8" />
                   </g>
                 )}
+
+                {/* Stage 2: Khóc */}
                 {loseStage === 2 && (
                   <g>
                     <path d="M 70 74 Q 80 82 90 74" fill="none" stroke="#000000" strokeWidth="3.5" strokeLinecap="round" />
                     <path d="M 110 74 Q 120 82 130 74" fill="none" stroke="#000000" strokeWidth="3.5" strokeLinecap="round" />
+                    {/* Animated Stream of Tears */}
                     <path d="M 75 78 C 65 105, 55 140, 60 185" stroke="#38bdf8" strokeWidth="6" strokeLinecap="round" fill="none" />
                     <path d="M 125 78 C 118 105, 110 140, 115 185" stroke="#38bdf8" strokeWidth="6" strokeLinecap="round" fill="none" />
                     <path d="M 80 106 Q 100 94 120 106" fill="none" stroke="#000000" strokeWidth="3" strokeLinecap="round" />
                   </g>
                 )}
+
+                {/* Stage 3: Tức Giận */}
                 {loseStage === 3 && (
                   <g>
                     <path d="M 64 74 L 88 58" stroke="#ef4444" strokeWidth="4.5" strokeLinecap="round" />
                     <path d="M 136 74 L 112 58" stroke="#ef4444" strokeWidth="4.5" strokeLinecap="round" />
-                    <circle cx="78" cy="74" r="6" fill="#ef4444" stroke="#000000" strokeWidth="2" />
-                    <circle cx="122" cy="74" r="6" fill="#ef4444" stroke="#000000" strokeWidth="2" />
+                    <circle cx="78" cy="74" r="6.5" fill="#ef4444" stroke="#000000" strokeWidth="2" />
+                    <circle cx="122" cy="74" r="6.5" fill="#ef4444" stroke="#000000" strokeWidth="2" />
                     <path d="M 76 94 Q 100 86 124 94 Q 126 112 100 114 Q 74 112 76 94 Z" fill="#991b1b" stroke="#000000" strokeWidth="3" />
+                    <path d="M 80 94 Q 100 90 120 94" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
                   </g>
                 )}
               </g>
             )}
 
+            {/* THINKING */}
             {currentEmotion === 'thinking' && (
               <g id="face-thinking">
                 <circle cx="74" cy="72" r="4.5" fill="#000000" />
@@ -344,6 +407,7 @@ export default function BotCharacterModel({
               </g>
             )}
 
+            {/* IDLE */}
             {currentEmotion === 'idle' && (
               <g id="face-idle">
                 <circle cx="76" cy="72" r="4.5" fill="#000000" />
