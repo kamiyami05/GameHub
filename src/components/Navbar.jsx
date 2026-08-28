@@ -66,7 +66,11 @@ export default function Navbar({ onOpenCharacterSelect, onOpenCoffee }) {
           className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-[#1b1e2a] hover:bg-[#222635] border border-[#282d3d] hover:border-sky-500/50 text-slate-200 transition-colors cursor-pointer"
           title="Đổi nhân vật & thông tin"
         >
-          <span className="text-base shrink-0">{charInfo.icon}</span>
+          <img 
+            src={`/avatars/${characterId}.jpg`} 
+            alt="" 
+            className="w-7 h-7 rounded-xl object-cover shrink-0 border border-sky-400/40 shadow-sm" 
+          />
           <div className="flex flex-col text-left max-w-[100px] sm:max-w-[140px]">
             <span className="font-bold text-slate-200 text-xs truncate leading-tight">
               {username || 'Kỳ Thủ'}

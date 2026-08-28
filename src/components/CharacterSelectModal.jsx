@@ -143,7 +143,11 @@ export default function CharacterSelectModal({ isOpen, onClose }) {
                       : 'bg-[#0f1016] border-[#1d212c] hover:bg-[#151722] hover:border-slate-600'
                   }`}
                 >
-                  <span className="text-2xl shrink-0">{c.icon}</span>
+                  <img 
+                    src={`/avatars/${c.id}.jpg`} 
+                    alt={c.name}
+                    className="w-10 h-10 rounded-xl object-cover border border-slate-700 shrink-0 shadow-sm"
+                  />
                   <div className="truncate">
                     <div className="text-xs font-bold text-slate-200 truncate">{c.name}</div>
                     <div className="text-[10px] text-slate-400 truncate">{c.title}</div>

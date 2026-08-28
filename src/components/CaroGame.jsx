@@ -395,10 +395,14 @@ export default function CaroGame({ onOpenCharacterSelect }) {
           className="bg-[#14161f] border border-[#232734] rounded-xl p-2 flex items-center justify-between cursor-pointer"
         >
           <div className="flex items-center gap-2 truncate">
-            <span className="text-xl">{playerChar.icon}</span>
+            <img 
+              src={`/avatars/${characterId}.jpg`} 
+              alt="" 
+              className="w-8 h-8 rounded-xl object-cover shrink-0 border border-sky-400/40 shadow-sm" 
+            />
             <div className="truncate">
               <span className="text-xs font-bold text-slate-200 block truncate">{username} (X)</span>
-              <span className="text-[10px] font-mono text-amber-400">{elo} Elo</span>
+              <span className="text-[10px] font-mono text-amber-400">{elo}/900 Tu Vi</span>
             </div>
           </div>
           <Sparkles className="w-3 h-3 text-slate-500 shrink-0" />
@@ -407,10 +411,14 @@ export default function CaroGame({ onOpenCharacterSelect }) {
         {/* Mobile Bot Mini Pill */}
         <div className="bg-[#14161f] border border-[#232734] rounded-xl p-2 flex items-center justify-between">
           <div className="flex items-center gap-2 truncate">
-            <span className="text-xl">{difficulty === 'easy' ? '🐼' : difficulty === 'hard' ? '🧙' : '🐉'}</span>
+            <img 
+              src={`/avatars/${activeBot.id}.jpg`} 
+              alt="" 
+              className="w-8 h-8 rounded-xl object-cover shrink-0 border border-rose-500/40 shadow-sm" 
+            />
             <div className="truncate">
               <span className="text-xs font-bold text-slate-200 block truncate">{activeBot.name} (O)</span>
-              <span className="text-[10px] font-mono text-rose-400">{activeBot.elo} Elo</span>
+              <span className="text-[10px] font-mono text-rose-400">{activeBot.elo}/900</span>
             </div>
           </div>
           <span className="text-[10px] text-slate-500 font-mono">AI</span>
