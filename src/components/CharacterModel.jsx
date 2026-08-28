@@ -53,7 +53,7 @@ const BOT_QUOTES = {
     'Nước cờ còn non lắm!',
     'Chuẩn bị thua đi đạo hữu!',
     'Nước đi này sơ hở quá!',
-    'Bổn tọa xin nhẹ điểm Elo nhé!'
+    'Bổn tọa xin nhẹ điểm Tu Vi nhé!'
   ],
   confident: [
     'Bổn tọa đã nắm chắc phần thắng!',
@@ -68,7 +68,7 @@ const BOT_QUOTES = {
   ],
   happy: [
     'Hahaha! Bổn tọa thắng rồi!',
-    'Cảm ơn điểm Elo của đạo hữu!',
+    'Cảm ơn điểm Tu Vi của đạo hữu!',
     'Ván cờ tuyệt vời!'
   ]
 };
@@ -97,15 +97,15 @@ const CHARACTER_META = {
     name: 'Đạo Sĩ Gấu Trúc',
     auraColor: 'rgba(56, 189, 248, 0.4)',
     borderColor: '#38bdf8',
-    bgGlow: 'from-sky-500/20 to-teal-500/10',
     icon: '🍃',
-    src: '/avatars/panda.jpg'
+    src: '/avatars/panda.jpg',
+    shockedSrc: '/avatars/panda_shocked.jpg',
+    happySrc: '/avatars/panda_happy.jpg'
   },
   fox: {
     name: 'Linh Hồ Tiên Tử',
     auraColor: 'rgba(244, 63, 94, 0.45)',
     borderColor: '#f43f5e',
-    bgGlow: 'from-rose-500/20 to-pink-500/10',
     icon: '🌸',
     src: '/avatars/fox.jpg'
   },
@@ -113,7 +113,6 @@ const CHARACTER_META = {
     name: 'Bạch Hổ Tướng Quân',
     auraColor: 'rgba(245, 158, 11, 0.45)',
     borderColor: '#f59e0b',
-    bgGlow: 'from-amber-500/20 to-orange-500/10',
     icon: '⚡',
     src: '/avatars/tiger.jpg'
   },
@@ -121,7 +120,6 @@ const CHARACTER_META = {
     name: 'Thần Long Thánh Tôn',
     auraColor: 'rgba(14, 165, 233, 0.5)',
     borderColor: '#0284c7',
-    bgGlow: 'from-cyan-500/25 to-blue-500/10',
     icon: '🐉',
     src: '/avatars/dragon.jpg'
   },
@@ -129,7 +127,6 @@ const CHARACTER_META = {
     name: 'Vô Cực Tiên Tôn',
     auraColor: 'rgba(139, 92, 246, 0.45)',
     borderColor: '#8b5cf6',
-    bgGlow: 'from-purple-500/20 to-indigo-500/10',
     icon: '☯️',
     src: '/avatars/sage.jpg'
   },
@@ -137,7 +134,6 @@ const CHARACTER_META = {
     name: 'Cyber Cơ Giáp',
     auraColor: 'rgba(6, 182, 212, 0.5)',
     borderColor: '#06b6d4',
-    bgGlow: 'from-cyan-500/25 to-sky-500/10',
     icon: '🌐',
     src: '/avatars/mecha.jpg'
   },
@@ -145,9 +141,12 @@ const CHARACTER_META = {
     name: 'Cửu U Ma Tôn',
     auraColor: 'rgba(225, 29, 72, 0.55)',
     borderColor: '#e11d48',
-    bgGlow: 'from-rose-600/30 to-red-950/40',
     icon: '🔥',
-    src: '/avatars/maton.jpg'
+    src: '/avatars/maton.jpg',
+    shockedSrc: '/avatars/maton_shocked.jpg',
+    happySrc: '/avatars/maton_happy.jpg',
+    cryingSrc: '/avatars/maton_crying.jpg',
+    angrySrc: '/avatars/maton_angry.jpg'
   }
 };
 
@@ -173,6 +172,32 @@ export default function CharacterModel({
     : characterId;
 
   const meta = CHARACTER_META[activeKey] || CHARACTER_META.panda;
+
+  // Resolve dynamic expression image based on actual emotional state
+  const getImageSource = () => {
+    if (activeKey === 'maton') {
+      if (emotion === 'sad') {
+        if (loseStage === 3) return meta.angrySrc || meta.src;
+        if (loseStage === 2) return meta.cryingSrc || meta.src;
+        return meta.shockedSrc || meta.src;
+      }
+      if (currentEmotion === 'shocked') return meta.shockedSrc || meta.src;
+      if (currentEmotion === 'happy' || currentEmotion === 'taunt') return meta.happySrc || meta.src;
+      return meta.src;
+    }
+
+    if (activeKey === 'panda') {
+      if (currentEmotion === 'shocked' || (emotion === 'sad' && loseStage >= 2)) {
+        return meta.shockedSrc || meta.src;
+      }
+      if (currentEmotion === 'happy') return meta.happySrc || meta.src;
+      return meta.src;
+    }
+
+    return meta.src;
+  };
+
+  const activeImageSrc = getImageSource();
 
   // Sync emotion & dialogue
   useEffect(() => {
@@ -260,7 +285,7 @@ export default function CharacterModel({
         </div>
       )}
 
-      {/* Interactive Avatar Container with High-Res Illustration & Animated Overlays */}
+      {/* Interactive Avatar Container with Dynamic Expression Switcher */}
       <div 
         onClick={handlePoke}
         title="Nhấn vào để tương tác"
@@ -287,20 +312,21 @@ export default function CharacterModel({
           style={{ backgroundColor: meta.auraColor }}
         />
 
-        {/* Main Character Portrait Card */}
+        {/* Main Character Portrait Card with REAL EXPRESSION CHANGING IMAGE */}
         <div 
           className={`relative rounded-3xl overflow-hidden border-2 shadow-2xl transition-all duration-300 ${getDimensionClasses()} ${
             currentEmotion === 'shocked' ? 'animate-pulse' : ''
           }`}
           style={{ borderColor: meta.borderColor }}
         >
-          {/* Background Illustration */}
+          {/* Dynamic Illustration based on Emotion */}
           <img 
-            src={meta.src} 
+            key={`${activeKey}-${activeImageSrc}`}
+            src={activeImageSrc} 
             alt={meta.name}
-            className={`w-full h-full object-cover select-none transition-transform duration-300 ${
+            className={`w-full h-full object-cover select-none transition-all duration-300 animate-fadeIn ${
               currentEmotion === 'shocked' 
-                ? 'scale-110' 
+                ? 'scale-105' 
                 : currentEmotion === 'happy' 
                   ? 'scale-105' 
                   : isPoked 
@@ -310,60 +336,20 @@ export default function CharacterModel({
           />
 
           {/* Shimmer & Lighting Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-white/10 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-white/10 pointer-events-none" />
 
-          {/* ================= DYNAMIC EMOTION OVERLAYS ================= */}
-          {/* CONFIDENT / TAUNT EYE SPARKLE */}
-          {(currentEmotion === 'confident' || currentEmotion === 'taunt') && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-fadeIn">
-              <div className="absolute top-2 right-2 text-base animate-ping">✨</div>
-              <div className="absolute bottom-2 left-2 text-xs opacity-75">🔥</div>
-            </div>
-          )}
-
-          {/* THINKING BUBBLE */}
+          {/* Additional Dynamic FX Overlays */}
           {currentEmotion === 'thinking' && (
-            <div className="absolute top-2 right-2 bg-[#14161f]/80 backdrop-blur-sm border border-sky-400/40 rounded-full px-2 py-0.5 text-xs text-sky-300 font-mono shadow-md animate-bounce pointer-events-none">
+            <div className="absolute top-2 right-2 bg-[#14161f]/85 backdrop-blur-sm border border-sky-400/50 rounded-full px-2 py-0.5 text-xs text-sky-300 font-mono shadow-md animate-bounce pointer-events-none">
               💭 ...
             </div>
           )}
 
-          {/* SHOCKED SWEAT DROP & TENSION */}
-          {currentEmotion === 'shocked' && (
-            <div className="absolute inset-0 bg-sky-950/30 backdrop-blur-[0.5px] flex items-center justify-center pointer-events-none">
-              <div className="absolute top-3 right-3 text-lg animate-bounce">💦</div>
-              <div className="absolute top-4 left-3 text-sm text-sky-400 font-black animate-pulse">! !</div>
-            </div>
-          )}
-
-          {/* HAPPY VICTORY GLOW */}
-          {currentEmotion === 'happy' && (
-            <div className="absolute inset-0 bg-amber-500/10 flex items-center justify-center pointer-events-none animate-fadeIn">
-              <div className="absolute top-2 left-2 text-base">🎉</div>
-              <div className="absolute top-2 right-2 text-base">✨</div>
-            </div>
-          )}
-
-          {/* SAD / LOSE PROGRESSION OVERLAYS */}
-          {emotion === 'sad' && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none animate-fadeIn">
-              {loseStage === 1 && (
-                <div className="absolute top-6 right-6 text-base animate-pulse">💧</div>
-              )}
-              {loseStage === 2 && (
-                <div className="absolute inset-0 flex items-center justify-around px-4">
-                  <div className="text-xl animate-bounce">😭</div>
-                  <div className="text-xl animate-bounce">💧</div>
-                </div>
-              )}
-              {loseStage === 3 && (
-                <div className="absolute inset-0 bg-rose-900/40 flex flex-col items-center justify-between p-2 animate-pulse">
-                  <div className="text-xl animate-bounce">🔥 😡 🔥</div>
-                  <div className="text-xs font-bold text-rose-400 bg-black/70 px-2 py-0.5 rounded-full border border-rose-500">
-                    BỐC HỎA!
-                  </div>
-                </div>
-              )}
+          {isBot && emotion === 'sad' && loseStage === 3 && (
+            <div className="absolute inset-0 bg-rose-900/30 flex items-center justify-center pointer-events-none animate-pulse">
+              <div className="text-xs font-bold text-white bg-red-600/90 px-2.5 py-1 rounded-full border border-red-400 shadow-lg animate-bounce">
+                😡 BỐC HỎA!
+              </div>
             </div>
           )}
         </div>
