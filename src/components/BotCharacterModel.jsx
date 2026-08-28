@@ -162,19 +162,12 @@ export default function BotCharacterModel({
               : 'hover:scale-[1.02] active:scale-95'
         }`}
       >
-        {/* ================= STYLISH FLOATING INTERACTIVE POKE BUTTON ================= */}
+        {/* Floating text only (No border, clean text "Nhấn") */}
         {emotion === 'sad' && (
-          <div className="absolute -top-1 -right-3 sm:-right-5 z-30 pointer-events-none animate-bounce">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-rose-500/90 to-amber-500/90 text-white font-bold text-[11px] shadow-lg border border-white/30 backdrop-blur-md">
-              <span className="text-xs">👆</span>
-              <span>Nhấn</span>
-              {/* 3 Interactive Stage Indicator Dots */}
-              <div className="flex items-center gap-0.5 ml-0.5">
-                <span className={`w-1.5 h-1.5 rounded-full ${loseStage >= 1 ? 'bg-white' : 'bg-white/40'}`} />
-                <span className={`w-1.5 h-1.5 rounded-full ${loseStage >= 2 ? 'bg-white' : 'bg-white/40'}`} />
-                <span className={`w-1.5 h-1.5 rounded-full ${loseStage >= 3 ? 'bg-amber-300 animate-ping' : 'bg-white/40'}`} />
-              </div>
-            </div>
+          <div className="absolute -top-3.5 right-1 sm:right-3 z-30 pointer-events-none animate-bounce">
+            <span className="text-amber-400 font-bold text-xs select-none">
+              Nhấn 👆
+            </span>
           </div>
         )}
 
