@@ -162,11 +162,11 @@ export default function BotCharacterModel({
               : 'hover:scale-[1.02] active:scale-95'
         }`}
       >
-        {/* Floating text only (No border, clean text "Nhấn") */}
+        {/* Floating text near the body */}
         {emotion === 'sad' && (
-          <div className="absolute -top-3.5 right-1 sm:right-3 z-30 pointer-events-none animate-bounce">
-            <span className="text-amber-400 font-bold text-xs select-none">
-              Nhấn 👆
+          <div className="absolute top-[52%] -translate-y-1/2 -right-3 sm:-right-6 z-30 pointer-events-none animate-bounce">
+            <span className="text-amber-400 font-bold text-xs select-none flex items-center gap-1">
+              👈 Nhấn
             </span>
           </div>
         )}
