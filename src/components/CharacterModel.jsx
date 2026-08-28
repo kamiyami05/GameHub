@@ -175,8 +175,8 @@ export default function CharacterModel({
   const getDimensions = () => {
     switch (size) {
       case 'small': return { w: 90, h: 110 };
-      case 'large': return { w: 180, h: 210 };
-      default: return { w: 130, h: 155 };
+      case 'large': return { w: 180, h: 215 };
+      default: return { w: 135, h: 160 };
     }
   };
 
@@ -184,7 +184,7 @@ export default function CharacterModel({
 
   // Resolve visual archetype
   const activeChar = isBot 
-    ? (difficulty === 'easy' ? 'panda' : difficulty === 'hard' ? 'sage' : 'dragon')
+    ? (difficulty === 'easy' ? 'panda' : difficulty === 'hard' ? 'sage' : 'maton')
     : characterId;
 
   return (
@@ -222,52 +222,92 @@ export default function CharacterModel({
           </div>
         )}
 
-        {/* SVG Vector Model */}
+        {/* High-Definition Unique SVG Vector Characters */}
         <svg
           width={dim.w}
           height={dim.h}
           viewBox="0 0 200 230"
-          className="drop-shadow-md"
+          className="drop-shadow-lg"
         >
           <defs>
-            {/* Common & Character Specific Gradients */}
-            <linearGradient id="grad-panda-robe" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#2c3647" />
-              <stop offset="100%" stopColor="#1e2430" />
+            {/* Panda Shaders */}
+            <linearGradient id="panda-hat" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#d97706" />
+              <stop offset="50%" stopColor="#b45309" />
+              <stop offset="100%" stopColor="#78350f" />
             </linearGradient>
-            <linearGradient id="grad-fox-robe" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id="panda-robe" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#334155" />
+              <stop offset="100%" stopColor="#0f172a" />
+            </linearGradient>
+
+            {/* Fox Fairy Shaders */}
+            <linearGradient id="fox-fur" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#fb923c" />
+              <stop offset="100%" stopColor="#ea580c" />
+            </linearGradient>
+            <linearGradient id="fox-hanfu" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#f43f5e" />
               <stop offset="100%" stopColor="#881337" />
             </linearGradient>
-            <linearGradient id="grad-tiger-robe" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f59e0b" />
-              <stop offset="100%" stopColor="#78350f" />
-            </linearGradient>
-            <linearGradient id="grad-dragon-robe" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#0f172a" />
-              <stop offset="100%" stopColor="#0284c7" />
-            </linearGradient>
-            <linearGradient id="grad-sage-robe" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f8fafc" />
-              <stop offset="100%" stopColor="#64748b" />
-            </linearGradient>
-            <linearGradient id="grad-mecha-robe" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#0891b2" />
-              <stop offset="100%" stopColor="#164e63" />
+            <linearGradient id="fox-silk" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#fda4af" />
+              <stop offset="100%" stopColor="#fb7185" />
             </linearGradient>
 
-            {/* Hat Gradients */}
-            <linearGradient id="grad-straw-hat" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#d97706" />
-              <stop offset="100%" stopColor="#92400e" />
+            {/* Tiger General Shaders */}
+            <linearGradient id="tiger-armor" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#fbbf24" />
+              <stop offset="50%" stopColor="#d97706" />
+              <stop offset="100%" stopColor="#78350f" />
             </linearGradient>
-            <linearGradient id="grad-gold" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#fcd34d" />
-              <stop offset="100%" stopColor="#d97706" />
+            <linearGradient id="tiger-fur" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f8fafc" />
+              <stop offset="100%" stopColor="#e2e8f0" />
             </linearGradient>
-            <linearGradient id="grad-horns" x1="0" y1="0" x2="0" y2="1">
+
+            {/* Dragon Monarch Shaders */}
+            <linearGradient id="dragon-skin" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#0284c7" />
+              <stop offset="100%" stopColor="#0369a1" />
+            </linearGradient>
+            <linearGradient id="dragon-horn" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#fde047" />
+              <stop offset="100%" stopColor="#ca8a04" />
+            </linearGradient>
+            <linearGradient id="dragon-robe" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#1e1b4b" />
+              <stop offset="100%" stopColor="#0f172a" />
+            </linearGradient>
+
+            {/* Sage Shaders */}
+            <linearGradient id="sage-robe" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f8fafc" />
+              <stop offset="100%" stopColor="#cbd5e1" />
+            </linearGradient>
+            <linearGradient id="sage-inner" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#0284c7" />
+              <stop offset="100%" stopColor="#0369a1" />
+            </linearGradient>
+
+            {/* Mecha Shaders */}
+            <linearGradient id="mecha-armor" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#1e293b" />
+              <stop offset="100%" stopColor="#0f172a" />
+            </linearGradient>
+            <linearGradient id="mecha-glow" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#22d3ee" />
+              <stop offset="100%" stopColor="#06b6d4" />
+            </linearGradient>
+
+            {/* Ma Ton Shaders */}
+            <linearGradient id="maton-horn" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#ef4444" />
-              <stop offset="100%" stopColor="#7f1d1d" />
+              <stop offset="100%" stopColor="#450a0a" />
+            </linearGradient>
+            <linearGradient id="maton-armor" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#18181b" />
+              <stop offset="100%" stopColor="#09090b" />
             </linearGradient>
           </defs>
 
@@ -280,273 +320,322 @@ export default function CharacterModel({
             </g>
           )}
 
-          {/* ================= 1. TORSO & OUTFITS ================= */}
-          <g id="character-torso">
-            {activeChar === 'panda' && (
-              <g>
-                <path
-                  d="M 28 230 C 35 155, 60 135, 75 125 L 125 125 C 140 135, 165 155, 172 230 Z"
-                  fill={isBot && emotion === 'sad' && loseStage === 3 ? '#3f1c24' : 'url(#grad-panda-robe)'}
-                  stroke="#161c28"
-                  strokeWidth="2.5"
-                />
-                <path d="M 75 125 L 100 162 L 125 125 L 138 230 L 62 230 Z" fill="#64748b" stroke="#161c28" strokeWidth="2" />
-                <rect x="68" y="195" width="64" height="15" rx="3" fill="#475569" stroke="#161c28" strokeWidth="2" />
-                <circle cx="100" cy="202" r="6" fill="#e2e8f0" stroke="#0f172a" strokeWidth="1.5" />
-              </g>
-            )}
+          {/* ========================================================================= */}
+          {/* 1. ARCHETYPE: PANDA (ĐẠO SĨ GẤU TRÚC)                                   */}
+          {/* ========================================================================= */}
+          {activeChar === 'panda' && (
+            <g id="char-panda">
+              {/* Torso & Robe */}
+              <path d="M 28 230 C 35 155, 60 135, 75 125 L 125 125 C 140 135, 165 155, 172 230 Z" fill="url(#panda-robe)" stroke="#0f172a" strokeWidth="2.5" />
+              <path d="M 75 125 L 100 162 L 125 125 L 138 230 L 62 230 Z" fill="#475569" stroke="#0f172a" strokeWidth="2" />
+              <path d="M 75 125 L 100 162 L 125 125" fill="none" stroke="#94a3b8" strokeWidth="2.5" />
+              <rect x="68" y="195" width="64" height="15" rx="3" fill="#1e293b" stroke="#0f172a" strokeWidth="2" />
+              <circle cx="100" cy="202" r="6" fill="#38bdf8" stroke="#0f172a" strokeWidth="1.5" />
 
-            {activeChar === 'fox' && (
-              <g>
-                <path
-                  d="M 28 230 C 35 155, 60 135, 75 125 L 125 125 C 140 135, 165 155, 172 230 Z"
-                  fill="url(#grad-fox-robe)"
-                  stroke="#881337"
-                  strokeWidth="2.5"
-                />
-                <path d="M 75 125 L 100 165 L 125 125 L 135 230 L 65 230 Z" fill="#fda4af" stroke="#881337" strokeWidth="2" />
-                <rect x="66" y="195" width="68" height="15" rx="3" fill="#be123c" stroke="#881337" strokeWidth="2" />
-                <circle cx="100" cy="202" r="7" fill="#fb7185" stroke="#ffe4e6" strokeWidth="1.5" />
-              </g>
-            )}
+              {/* Ears */}
+              <circle cx="54" cy="52" r="22" fill="#18181b" stroke="#09090b" strokeWidth="2.5" />
+              <circle cx="54" cy="52" r="11" fill="#27272a" />
+              <circle cx="146" cy="52" r="22" fill="#18181b" stroke="#09090b" strokeWidth="2.5" />
+              <circle cx="146" cy="52" r="11" fill="#27272a" />
 
-            {activeChar === 'tiger' && (
-              <g>
-                <path
-                  d="M 24 230 C 32 150, 58 130, 75 120 L 125 120 C 142 130, 168 150, 176 230 Z"
-                  fill="url(#grad-tiger-robe)"
-                  stroke="#78350f"
-                  strokeWidth="2.5"
-                />
-                <path d="M 25 170 L 45 140 L 65 175 Z" fill="#d97706" stroke="#78350f" strokeWidth="1.5" />
-                <path d="M 175 170 L 155 140 L 135 175 Z" fill="#d97706" stroke="#78350f" strokeWidth="1.5" />
-                <path d="M 75 120 L 100 165 L 125 120 L 140 230 L 60 230 Z" fill="#fed7aa" stroke="#78350f" strokeWidth="2" />
-                <rect x="64" y="195" width="72" height="16" rx="3" fill="#b45309" stroke="#78350f" strokeWidth="2" />
-              </g>
-            )}
+              {/* Head */}
+              <ellipse cx="100" cy="85" rx="58" ry="46" fill="#ffffff" stroke="#09090b" strokeWidth="3.5" />
 
-            {activeChar === 'dragon' && (
-              <g>
-                <path
-                  d="M 22 230 C 30 148, 55 125, 75 118 L 125 118 C 145 125, 170 148, 178 230 Z"
-                  fill={isBot && difficulty === 'impossible' ? '#18181b' : 'url(#grad-dragon-robe)'}
-                  stroke={isBot && difficulty === 'impossible' ? '#dc2626' : '#0284c7'}
-                  strokeWidth="2.5"
-                />
-                <path d="M 75 118 L 100 166 L 125 118 L 142 230 L 58 230 Z" fill="#0369a1" stroke="#0284c7" strokeWidth="2" />
-                <rect x="62" y="195" width="76" height="16" rx="3" fill="#0f172a" stroke="#38bdf8" strokeWidth="2" />
-                <circle cx="100" cy="203" r="8" fill="#38bdf8" stroke="#f0f9ff" strokeWidth="1.5" />
-              </g>
-            )}
+              {/* Conical Straw Hat */}
+              <path d="M 68 35 C 68 12, 132 12, 132 35 Z" fill="url(#panda-hat)" stroke="#09090b" strokeWidth="3" />
+              <path d="M 30 46 C 28 30, 172 30, 170 46 C 172 65, 28 65, 30 46 Z" fill="url(#panda-hat)" stroke="#09090b" strokeWidth="3" />
+              <line x1="50" y1="46" x2="150" y2="46" stroke="#78350f" strokeWidth="2" />
 
-            {activeChar === 'sage' && (
-              <g>
-                <path
-                  d="M 24 230 C 32 150, 58 130, 75 120 L 125 120 C 142 130, 168 150, 176 230 Z"
-                  fill="url(#grad-sage-robe)"
-                  stroke="#475569"
-                  strokeWidth="2.5"
-                />
-                <path d="M 75 120 L 100 165 L 125 120 L 140 230 L 60 230 Z" fill="#0284c7" stroke="#0369a1" strokeWidth="2" />
-                <path d="M 75 120 L 100 165 L 125 120" fill="none" stroke="#f59e0b" strokeWidth="3" />
-                <rect x="64" y="195" width="72" height="16" rx="3" fill="#f59e0b" stroke="#d97706" strokeWidth="2" />
-                <circle cx="100" cy="203" r="8" fill="#38bdf8" stroke="#f59e0b" strokeWidth="1.5" />
-              </g>
-            )}
+              {/* Panda Signature Eye Patches */}
+              <ellipse cx="76" cy="74" rx="14" ry="18" transform="rotate(-15 76 74)" fill="#18181b" />
+              <ellipse cx="124" cy="74" rx="14" ry="18" transform="rotate(15 124 74)" fill="#18181b" />
 
-            {activeChar === 'mecha' && (
-              <g>
-                <path
-                  d="M 22 230 C 30 150, 56 128, 75 120 L 125 120 C 144 128, 170 150, 178 230 Z"
-                  fill="url(#grad-mecha-robe)"
-                  stroke="#0891b2"
-                  strokeWidth="2.5"
-                />
-                <path d="M 75 120 L 100 160 L 125 120 L 138 230 L 62 230 Z" fill="#155e75" stroke="#06b6d4" strokeWidth="2" />
-                <rect x="65" y="195" width="70" height="15" rx="3" fill="#0e7490" stroke="#22d3ee" strokeWidth="2" />
-                <circle cx="100" cy="202" r="7" fill="#22d3ee" stroke="#cffafe" strokeWidth="1.5" />
-              </g>
-            )}
-          </g>
+              {/* Eyes & Snout */}
+              <circle cx="78" cy="74" r="4.5" fill="#ffffff" />
+              <circle cx="122" cy="74" r="4.5" fill="#ffffff" />
+              <circle cx="78" cy="74" r="2.5" fill="#000000" />
+              <circle cx="122" cy="74" r="2.5" fill="#000000" />
 
-          {/* ================= 2. HEAD & DISTINCT GEAR ================= */}
-          <g id="character-head">
-            {/* Base Ears */}
-            {activeChar === 'panda' && (
-              <g>
-                <circle cx="56" cy="50" r="20" fill="#18181b" stroke="#09090b" strokeWidth="2.5" />
-                <circle cx="144" cy="50" r="20" fill="#18181b" stroke="#09090b" strokeWidth="2.5" />
-              </g>
-            )}
-            {activeChar === 'fox' && (
-              <g>
-                <polygon points="40,65 65,20 80,65" fill="#f43f5e" stroke="#881337" strokeWidth="2.5" />
-                <polygon points="50,60 65,32 72,60" fill="#ffe4e6" />
-                <polygon points="160,65 135,20 120,65" fill="#f43f5e" stroke="#881337" strokeWidth="2.5" />
-                <polygon points="150,60 135,32 128,60" fill="#ffe4e6" />
-              </g>
-            )}
-            {activeChar === 'tiger' && (
-              <g>
-                <circle cx="54" cy="48" r="18" fill="#f59e0b" stroke="#78350f" strokeWidth="2.5" />
-                <circle cx="54" cy="48" r="10" fill="#fef3c7" />
-                <circle cx="146" cy="48" r="18" fill="#f59e0b" stroke="#78350f" strokeWidth="2.5" />
-                <circle cx="146" cy="48" r="10" fill="#fef3c7" />
-              </g>
-            )}
-            {activeChar === 'dragon' && (
-              <g>
-                <path d="M 65 42 C 45 20, 30 0, 18 12 C 28 35, 52 48, 62 48 Z" fill="url(#grad-horns)" stroke="#dc2626" strokeWidth="2.5" />
-                <path d="M 135 42 C 155 20, 170 0, 182 12 C 172 35, 148 48, 138 48 Z" fill="url(#grad-horns)" stroke="#dc2626" strokeWidth="2.5" />
-              </g>
-            )}
-            {activeChar === 'sage' && (
-              <g>
-                <circle cx="56" cy="50" r="18" fill="#18181b" stroke="#09090b" strokeWidth="2" />
-                <circle cx="144" cy="50" r="18" fill="#18181b" stroke="#09090b" strokeWidth="2" />
-              </g>
-            )}
-            {activeChar === 'mecha' && (
-              <g>
-                <rect x="36" y="55" width="14" height="24" rx="4" fill="#0891b2" stroke="#22d3ee" strokeWidth="2" />
-                <rect x="150" y="55" width="14" height="24" rx="4" fill="#0891b2" stroke="#22d3ee" strokeWidth="2" />
-              </g>
-            )}
+              <ellipse cx="100" cy="88" rx="8" ry="5" fill="#18181b" />
+              <path d="M 100 93 L 100 97 M 94 97 Q 100 102 106 97" stroke="#18181b" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+            </g>
+          )}
 
-            {/* Base Face Ellipse */}
-            <ellipse 
-              cx="100" 
-              cy="85" 
-              rx="58" 
-              ry="46" 
-              fill={
-                activeChar === 'mecha' ? '#0f172a' :
-                activeChar === 'tiger' ? '#fef3c7' :
-                activeChar === 'fox' ? '#fff1f2' :
-                (isBot && emotion === 'sad' && loseStage === 3 ? '#fee2e2' : '#ffffff')
-              } 
-              stroke={activeChar === 'mecha' ? '#06b6d4' : '#09090b'} 
-              strokeWidth="3.5" 
-            />
+          {/* ========================================================================= */}
+          {/* 2. ARCHETYPE: FOX FAIRY (LINH HỒ TIÊN TỬ)                                */}
+          {/* ========================================================================= */}
+          {activeChar === 'fox' && (
+            <g id="char-fox">
+              {/* Flowing Hanfu Robe */}
+              <path d="M 28 230 C 35 155, 60 135, 75 125 L 125 125 C 140 135, 165 155, 172 230 Z" fill="url(#fox-hanfu)" stroke="#881337" strokeWidth="2.5" />
+              {/* Celestial Floating Silk Ribbons */}
+              <path d="M 32 150 Q 15 170 25 210 Q 35 180 45 160 Z" fill="url(#fox-silk)" opacity="0.9" />
+              <path d="M 168 150 Q 185 170 175 210 Q 165 180 155 160 Z" fill="url(#fox-silk)" opacity="0.9" />
+              <path d="M 75 125 L 100 165 L 125 125 L 138 230 L 62 230 Z" fill="#ffe4e6" stroke="#881337" strokeWidth="2" />
+              <rect x="66" y="195" width="68" height="15" rx="3" fill="#9f1239" stroke="#881337" strokeWidth="2" />
+              <circle cx="100" cy="202" r="6" fill="#10b981" stroke="#ffe4e6" strokeWidth="1.5" />
 
-            {/* Headgear Decor */}
-            {activeChar === 'panda' && (
-              <g id="hat-straw">
-                <path d="M 68 35 C 68 12, 132 12, 132 35 Z" fill="url(#grad-straw-hat)" stroke="#09090b" strokeWidth="3" />
-                <path d="M 32 46 C 30 32, 170 32, 168 46 C 170 65, 30 65, 32 46 Z" fill="url(#grad-straw-hat)" stroke="#09090b" strokeWidth="3" />
-              </g>
-            )}
-            {activeChar === 'fox' && (
-              <g id="fox-jewel">
-                <circle cx="100" cy="50" r="6" fill="#10b981" stroke="#047857" strokeWidth="1.5" />
-              </g>
-            )}
-            {activeChar === 'tiger' && (
-              <g id="tiger-stripes">
-                <path d="M 100 48 L 100 62 M 90 54 L 110 54" stroke="#78350f" strokeWidth="3" strokeLinecap="round" />
-              </g>
-            )}
-            {activeChar === 'dragon' && (
-              <g id="dragon-crown">
-                <path d="M 72 44 L 80 20 L 100 34 L 120 20 L 128 44 Z" fill="url(#grad-gold)" stroke="#d97706" strokeWidth="2.5" />
-                <circle cx="100" cy="50" r="5" fill="#38bdf8" />
-              </g>
-            )}
-            {activeChar === 'sage' && (
-              <g id="sage-crown">
-                <circle cx="100" cy="22" r="16" fill="#18181b" stroke="#09090b" strokeWidth="2" />
-                <path d="M 60 22 L 140 22" stroke="#10b981" strokeWidth="4" strokeLinecap="round" />
-                <path d="M 76 42 L 84 18 L 100 28 L 116 18 L 124 42 Z" fill="url(#grad-gold)" stroke="#d97706" strokeWidth="2.5" />
-              </g>
-            )}
-            {activeChar === 'mecha' && (
-              <g id="mecha-visor">
-                <rect x="60" y="65" width="80" height="18" rx="6" fill="#22d3ee" stroke="#0891b2" strokeWidth="2" />
-                <line x1="65" y1="74" x2="135" y2="74" stroke="#ffffff" strokeWidth="2" opacity="0.8" />
-              </g>
-            )}
+              {/* Big Fluffy Fox Ears with Jade Earring */}
+              <polygon points="35,75 60,10 82,70" fill="url(#fox-fur)" stroke="#881337" strokeWidth="2.5" />
+              <polygon points="46,68 60,25 72,66" fill="#fff1f2" />
+              <polygon points="165,75 140,10 118,70" fill="url(#fox-fur)" stroke="#881337" strokeWidth="2.5" />
+              <polygon points="154,68 140,25 128,66" fill="#fff1f2" />
+              {/* Earring */}
+              <circle cx="34" cy="76" r="3.5" fill="#f59e0b" />
+              <line x1="34" y1="80" x2="34" y2="92" stroke="#f59e0b" strokeWidth="1.5" />
+              <circle cx="34" cy="94" r="3" fill="#10b981" />
 
-            {/* ================= 3. FACIAL EXPRESSIONS ================= */}
-            {/* Non-Mecha Eyes & Mouth */}
-            {activeChar !== 'mecha' && (
-              <g id="face-features">
-                {currentEmotion === 'confident' || currentEmotion === 'taunt' ? (
-                  <g id="face-confident">
-                    <path d="M 68 70 L 86 64" stroke="#000000" strokeWidth="3.5" strokeLinecap="round" />
-                    <path d="M 132 70 L 114 64" stroke="#000000" strokeWidth="3.5" strokeLinecap="round" />
-                    <circle cx="78" cy="74" r="4.5" fill="#000000" />
-                    <circle cx="122" cy="74" r="4.5" fill="#000000" />
-                    <path d="M 80 94 Q 100 88 120 94 Q 122 108 100 110 Q 78 108 80 94 Z" fill="#18181b" stroke="#000000" strokeWidth="2.5" />
-                    <path d="M 84 94 Q 100 90 116 94" stroke="#ffffff" strokeWidth="3.5" strokeLinecap="round" />
-                  </g>
-                ) : currentEmotion === 'happy' ? (
-                  <g id="face-happy">
-                    <path d="M 70 74 Q 80 64 90 74" fill="none" stroke="#000000" strokeWidth="3.5" strokeLinecap="round" />
-                    <path d="M 110 74 Q 120 64 130 74" fill="none" stroke="#000000" strokeWidth="3.5" strokeLinecap="round" />
-                    <path d="M 68 90 Q 100 125 132 90 Z" fill="#991b1b" stroke="#000000" strokeWidth="3" />
-                    <path d="M 72 92 Q 100 106 128 92" fill="#ffffff" stroke="#000000" strokeWidth="1.5" />
-                  </g>
+              {/* Fox Head & Sleek Muzzle */}
+              <path d="M 45 65 C 45 40, 155 40, 155 65 C 160 95, 140 120, 100 128 C 60 120, 40 95, 45 65 Z" fill="url(#fox-fur)" stroke="#881337" strokeWidth="3" />
+              {/* White Fox Cheeks */}
+              <path d="M 52 75 C 60 95, 80 118, 100 126 C 120 118, 140 95, 148 75 C 130 92, 100 95, 100 95 C 100 95, 70 92, 52 75 Z" fill="#ffffff" />
+
+              {/* Forehead Lotus / Bindi Mark */}
+              <path d="M 100 48 Q 96 56 100 62 Q 104 56 100 48 Z" fill="#e11d48" />
+
+              {/* Fox Eyes with Seductive Red Eyeliner */}
+              <path d="M 64 74 Q 78 66 90 74 Q 78 80 64 74 Z" fill="#1e1b4b" stroke="#e11d48" strokeWidth="1.5" />
+              <circle cx="78" cy="73" r="3" fill="#f43f5e" />
+              <circle cx="79" cy="72" r="1" fill="#ffffff" />
+
+              <path d="M 136 74 Q 122 66 110 74 Q 122 80 136 74 Z" fill="#1e1b4b" stroke="#e11d48" strokeWidth="1.5" />
+              <circle cx="122" cy="73" r="3" fill="#f43f5e" />
+              <circle cx="121" cy="72" r="1" fill="#ffffff" />
+
+              {/* Fox Cute Nose & Smile */}
+              <polygon points="97,94 103,94 100,98" fill="#881337" />
+              <path d="M 94 104 Q 100 108 106 104" stroke="#881337" strokeWidth="2" strokeLinecap="round" fill="none" />
+            </g>
+          )}
+
+          {/* ========================================================================= */}
+          {/* 3. ARCHETYPE: WHITE TIGER GENERAL (BẠCH HỔ TƯỚNG QUÂN)                   */}
+          {/* ========================================================================= */}
+          {activeChar === 'tiger' && (
+            <g id="char-tiger">
+              {/* Golden Warrior Armor & Cape */}
+              <path d="M 20 230 C 25 150, 55 125, 75 118 L 125 118 C 145 125, 175 150, 180 230 Z" fill="#b45309" stroke="#78350f" strokeWidth="2.5" />
+              <path d="M 22 145 L 48 120 L 70 155 L 50 180 Z" fill="url(#tiger-armor)" stroke="#78350f" strokeWidth="2" />
+              <path d="M 178 145 L 152 120 L 130 155 L 150 180 Z" fill="url(#tiger-armor)" stroke="#78350f" strokeWidth="2" />
+              <path d="M 75 118 L 100 166 L 125 118 L 142 230 L 58 230 Z" fill="url(#tiger-armor)" stroke="#78350f" strokeWidth="2" />
+              <rect x="62" y="195" width="76" height="16" rx="3" fill="#78350f" stroke="#f59e0b" strokeWidth="2" />
+              <circle cx="100" cy="203" r="7" fill="#fbbf24" stroke="#78350f" strokeWidth="1.5" />
+
+              {/* Tiger Rounded Ears */}
+              <circle cx="52" cy="50" r="20" fill="url(#tiger-fur)" stroke="#09090b" strokeWidth="2.5" />
+              <circle cx="52" cy="50" r="10" fill="#f59e0b" />
+              <circle cx="148" cy="50" r="20" fill="url(#tiger-fur)" stroke="#09090b" strokeWidth="2.5" />
+              <circle cx="148" cy="50" r="10" fill="#f59e0b" />
+
+              {/* White Tiger Face */}
+              <ellipse cx="100" cy="85" rx="58" ry="46" fill="url(#tiger-fur)" stroke="#09090b" strokeWidth="3.5" />
+
+              {/* Forehead "王" (King) Tiger Stripes */}
+              <g stroke="#09090b" strokeWidth="3" strokeLinecap="round">
+                <line x1="88" y1="46" x2="112" y2="46" />
+                <line x1="90" y1="53" x2="110" y2="53" />
+                <line x1="86" y1="60" x2="114" y2="60" />
+                <line x1="100" y1="44" x2="100" y2="62" />
+              </g>
+
+              {/* Cheek Stripes */}
+              <path d="M 46 76 L 62 80 M 48 86 L 64 88" stroke="#09090b" strokeWidth="3" strokeLinecap="round" />
+              <path d="M 154 76 L 138 80 M 152 86 L 136 88" stroke="#09090b" strokeWidth="3" strokeLinecap="round" />
+
+              {/* Fierce Tiger Eyes */}
+              <circle cx="76" cy="74" r="6" fill="#f59e0b" stroke="#09090b" strokeWidth="2" />
+              <circle cx="76" cy="74" r="2.5" fill="#000000" />
+              <circle cx="124" cy="74" r="6" fill="#f59e0b" stroke="#09090b" strokeWidth="2" />
+              <circle cx="124" cy="74" r="2.5" fill="#000000" />
+              <path d="M 68 68 L 86 64" stroke="#09090b" strokeWidth="3.5" strokeLinecap="round" />
+              <path d="M 132 68 L 114 64" stroke="#09090b" strokeWidth="3.5" strokeLinecap="round" />
+
+              {/* Snout with Whiskers */}
+              <ellipse cx="100" cy="94" rx="14" ry="9" fill="#ffffff" stroke="#09090b" strokeWidth="1.5" />
+              <polygon points="96,90 104,90 100,95" fill="#e11d48" />
+              <path d="M 94 99 Q 100 103 106 99" stroke="#09090b" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+            </g>
+          )}
+
+          {/* ========================================================================= */}
+          {/* 4. ARCHETYPE: DRAGON MONARCH (THẦN LONG THÁNH TÔN)                        */}
+          {/* ========================================================================= */}
+          {activeChar === 'dragon' && (
+            <g id="char-dragon">
+              {/* Imperial Dragon Robe */}
+              <path d="M 22 230 C 30 148, 55 125, 75 118 L 125 118 C 145 125, 170 148, 178 230 Z" fill="url(#dragon-robe)" stroke="#ca8a04" strokeWidth="2.5" />
+              <path d="M 75 118 L 100 166 L 125 118 L 142 230 L 58 230 Z" fill="#0369a1" stroke="#ca8a04" strokeWidth="2" />
+              <path d="M 75 118 L 100 166 L 125 118" fill="none" stroke="#fde047" strokeWidth="3" />
+              <rect x="62" y="195" width="76" height="16" rx="3" fill="#0f172a" stroke="#fde047" strokeWidth="2" />
+              <circle cx="100" cy="203" r="8" fill="#38bdf8" stroke="#fde047" strokeWidth="2" />
+
+              {/* Branching Majestic Golden Dragon Horns */}
+              <path d="M 65 48 C 50 25, 30 10, 16 18 C 24 35, 42 45, 58 52 Z" fill="url(#dragon-horn)" stroke="#a16207" strokeWidth="2" />
+              <path d="M 38 22 C 34 8, 22 4, 18 12 C 24 20, 32 24, 38 22 Z" fill="url(#dragon-horn)" stroke="#a16207" strokeWidth="1.5" />
+
+              <path d="M 135 48 C 150 25, 170 10, 184 18 C 176 35, 158 45, 142 52 Z" fill="url(#dragon-horn)" stroke="#a16207" strokeWidth="2" />
+              <path d="M 162 22 C 166 8, 178 4, 182 12 C 176 20, 168 24, 162 22 Z" fill="url(#dragon-horn)" stroke="#a16207" strokeWidth="1.5" />
+
+              {/* Imperial Dragon Crown */}
+              <path d="M 72 44 L 80 18 L 100 28 L 120 18 L 128 44 Z" fill="url(#dragon-horn)" stroke="#a16207" strokeWidth="2.5" />
+              <circle cx="100" cy="38" r="5" fill="#38bdf8" stroke="#ffffff" strokeWidth="1" />
+
+              {/* Azure Dragon Head & Scales */}
+              <ellipse cx="100" cy="85" rx="58" ry="46" fill="url(#dragon-skin)" stroke="#075985" strokeWidth="3" />
+
+              {/* Scales pattern on cheeks */}
+              <path d="M 52 76 Q 60 72 68 76 M 50 84 Q 58 80 66 84" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" />
+              <path d="M 148 76 Q 140 72 132 76 M 150 84 Q 142 80 134 84" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" />
+
+              {/* Piercing Glowing Dragon Eyes */}
+              <path d="M 64 74 Q 78 66 90 74 Q 78 82 64 74 Z" fill="#0c4a6e" stroke="#fde047" strokeWidth="2" />
+              <ellipse cx="78" cy="74" rx="2.5" ry="5" fill="#fde047" />
+              <circle cx="78" cy="74" r="1.5" fill="#ffffff" />
+
+              <path d="M 136 74 Q 122 66 110 74 Q 122 82 136 74 Z" fill="#0c4a6e" stroke="#fde047" strokeWidth="2" />
+              <ellipse cx="122" cy="74" rx="2.5" ry="5" fill="#fde047" />
+              <circle cx="122" cy="74" r="1.5" fill="#ffffff" />
+
+              {/* Flowing Majestic Dragon Whiskers (Long Tu) */}
+              <path d="M 88 94 C 70 102, 50 120, 40 155" stroke="#fde047" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+              <path d="M 112 94 C 130 102, 150 120, 160 155" stroke="#fde047" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+
+              {/* Snout & Mouth */}
+              <circle cx="94" cy="90" r="2.5" fill="#0369a1" />
+              <circle cx="106" cy="90" r="2.5" fill="#0369a1" />
+              <path d="M 86 100 Q 100 106 114 100" stroke="#082f49" strokeWidth="3" strokeLinecap="round" fill="none" />
+            </g>
+          )}
+
+          {/* ========================================================================= */}
+          {/* 5. ARCHETYPE: SAGE / TIEN TON (TRÚC LÂM PHÁP SƯ / VÔ CỰC TIÊN TÔN)        */}
+          {/* ========================================================================= */}
+          {activeChar === 'sage' && (
+            <g id="char-sage">
+              {/* Celestial White & Blue Robe */}
+              <path d="M 24 230 C 32 150, 58 130, 75 120 L 125 120 C 142 130, 168 150, 176 230 Z" fill="url(#sage-robe)" stroke="#94a3b8" strokeWidth="2.5" />
+              <path d="M 75 120 L 100 165 L 125 120 L 140 230 L 60 230 Z" fill="url(#sage-inner)" stroke="#0369a1" strokeWidth="2" />
+              <path d="M 75 120 L 100 165 L 125 120" fill="none" stroke="#f59e0b" strokeWidth="3" />
+              <rect x="64" y="195" width="72" height="16" rx="3" fill="#f59e0b" stroke="#d97706" strokeWidth="2" />
+              <circle cx="100" cy="203" r="8" fill="#38bdf8" stroke="#f59e0b" strokeWidth="1.5" />
+
+              {/* Topknot Hair & Jade Hairpin */}
+              <circle cx="100" cy="22" r="16" fill="#18181b" stroke="#09090b" strokeWidth="2" />
+              <path d="M 55 22 L 145 22" stroke="#10b981" strokeWidth="4.5" strokeLinecap="round" />
+              <circle cx="145" cy="22" r="4" fill="#f59e0b" />
+              <path d="M 76 42 L 84 18 L 100 28 L 116 18 L 124 42 Z" fill="url(#dragon-horn)" stroke="#d97706" strokeWidth="2.5" />
+
+              {/* Head */}
+              <ellipse cx="100" cy="85" rx="58" ry="46" fill="#ffffff" stroke="#09090b" strokeWidth="3.5" />
+
+              {/* Third Eye / Yin-Yang Mark */}
+              <circle cx="100" cy="52" r="5" fill="#38bdf8" stroke="#0284c7" strokeWidth="1.5" />
+
+              {/* Long Flowing White Eyebrows */}
+              <path d="M 64 68 Q 80 62 92 68 Q 82 56 64 68 Z" fill="#e2e8f0" stroke="#94a3b8" strokeWidth="1.5" />
+              <path d="M 136 68 Q 120 62 108 68 Q 118 56 136 68 Z" fill="#e2e8f0" stroke="#94a3b8" strokeWidth="1.5" />
+
+              {/* Calm Eyes */}
+              <circle cx="78" cy="74" r="4.5" fill="#000000" />
+              <circle cx="122" cy="74" r="4.5" fill="#000000" />
+
+              {/* Flowing Silver Beard */}
+              <path d="M 75 92 C 70 120, 85 160, 100 175 C 115 160, 130 120, 125 92 Z" fill="#f8fafc" stroke="#94a3b8" strokeWidth="2" />
+              <path d="M 85 96 Q 100 102 115 96" stroke="#000000" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+            </g>
+          )}
+
+          {/* ========================================================================= */}
+          {/* 6. ARCHETYPE: MECHA WARRIOR (CYBER CƠ GIÁP)                               */}
+          {/* ========================================================================= */}
+          {activeChar === 'mecha' && (
+            <g id="char-mecha">
+              {/* Titan Exoskeleton Armor */}
+              <path d="M 22 230 C 30 150, 56 128, 75 120 L 125 120 C 144 128, 170 150, 178 230 Z" fill="url(#mecha-armor)" stroke="#0891b2" strokeWidth="2.5" />
+              <path d="M 75 120 L 100 160 L 125 120 L 138 230 L 62 230 Z" fill="#155e75" stroke="#06b6d4" strokeWidth="2" />
+              <rect x="65" y="195" width="70" height="15" rx="3" fill="#0e7490" stroke="#22d3ee" strokeWidth="2" />
+              {/* Arc Reactor Core */}
+              <circle cx="100" cy="202" r="8" fill="#22d3ee" stroke="#cffafe" strokeWidth="2" />
+
+              {/* Sci-Fi Ear Antennae */}
+              <rect x="34" y="55" width="14" height="30" rx="4" fill="#0891b2" stroke="#22d3ee" strokeWidth="2" />
+              <rect x="152" y="55" width="14" height="30" rx="4" fill="#0891b2" stroke="#22d3ee" strokeWidth="2" />
+              <circle cx="41" cy="70" r="3" fill="#22d3ee" />
+              <circle cx="159" cy="70" r="3" fill="#22d3ee" />
+
+              {/* Mecha Head Helmet */}
+              <polygon points="50,45 150,45 162,100 100,126 38,100" fill="#0f172a" stroke="#06b6d4" strokeWidth="3" />
+
+              {/* Glowing Cyberpunk Visor with Expression */}
+              <rect x="54" y="66" width="92" height="22" rx="6" fill="#0891b2" stroke="#22d3ee" strokeWidth="2" />
+              {/* Neon LED Display Eyes inside Visor */}
+              <g stroke="#ffffff" strokeWidth="3" strokeLinecap="round">
+                {currentEmotion === 'happy' ? (
+                  <>
+                    <path d="M 68 78 Q 76 70 84 78" fill="none" />
+                    <path d="M 116 78 Q 124 70 132 78" fill="none" />
+                  </>
                 ) : currentEmotion === 'shocked' ? (
-                  <g id="face-shocked">
-                    <circle cx="76" cy="72" r="6" fill="#000000" />
-                    <circle cx="124" cy="72" r="6" fill="#000000" />
-                    <ellipse cx="100" cy="100" rx="10" ry="14" fill="#18181b" stroke="#000000" strokeWidth="2.5" />
-                    {/* Sweat drop */}
-                    <path d="M 135 60 Q 140 50 145 60 Q 140 68 135 60 Z" fill="#38bdf8" />
-                  </g>
-                ) : currentEmotion === 'sad' ? (
-                  <g id="face-sad">
-                    {isBot && loseStage === 2 ? (
-                      <g>
-                        <path d="M 70 74 Q 80 82 90 74" fill="none" stroke="#000000" strokeWidth="3.5" strokeLinecap="round" />
-                        <path d="M 110 74 Q 120 82 130 74" fill="none" stroke="#000000" strokeWidth="3.5" strokeLinecap="round" />
-                        <path d="M 75 78 C 65 105, 55 140, 60 185" stroke="#38bdf8" strokeWidth="6" strokeLinecap="round" fill="none" />
-                        <path d="M 125 78 C 118 105, 110 140, 115 185" stroke="#38bdf8" strokeWidth="6" strokeLinecap="round" fill="none" />
-                        <path d="M 80 106 Q 100 94 120 106" fill="none" stroke="#000000" strokeWidth="3" strokeLinecap="round" />
-                      </g>
-                    ) : isBot && loseStage === 3 ? (
-                      <g>
-                        <path d="M 64 74 L 88 58" stroke="#ef4444" strokeWidth="4.5" strokeLinecap="round" />
-                        <path d="M 136 74 L 112 58" stroke="#ef4444" strokeWidth="4.5" strokeLinecap="round" />
-                        <circle cx="78" cy="74" r="6.5" fill="#ef4444" stroke="#000000" strokeWidth="2" />
-                        <circle cx="122" cy="74" r="6.5" fill="#ef4444" stroke="#000000" strokeWidth="2" />
-                        <path d="M 76 94 Q 100 86 124 94 Q 126 112 100 114 Q 74 112 76 94 Z" fill="#991b1b" stroke="#000000" strokeWidth="3" />
-                      </g>
-                    ) : (
-                      <g>
-                        <path d="M 68 62 Q 78 72 88 62" fill="none" stroke="#000000" strokeWidth="3" strokeLinecap="round" />
-                        <path d="M 132 62 Q 122 72 112 62" fill="none" stroke="#000000" strokeWidth="3" strokeLinecap="round" />
-                        <circle cx="78" cy="76" r="4.5" fill="#000000" />
-                        <circle cx="122" cy="76" r="4.5" fill="#000000" />
-                        <path d="M 85 106 Q 100 94 115 106" fill="none" stroke="#000000" strokeWidth="3" strokeLinecap="round" />
-                        <circle cx="128" cy="88" r="2.5" fill="#38bdf8" />
-                      </g>
-                    )}
-                  </g>
-                ) : currentEmotion === 'thinking' ? (
-                  <g id="face-thinking">
-                    <circle cx="74" cy="72" r="4.5" fill="#000000" />
-                    <circle cx="118" cy="72" r="4.5" fill="#000000" />
-                    <line x1="85" y1="98" x2="115" y2="98" stroke="#000000" strokeWidth="3" strokeLinecap="round" />
-                  </g>
+                  <>
+                    <circle cx="76" cy="77" r="4" fill="#ffffff" />
+                    <circle cx="124" cy="77" r="4" fill="#ffffff" />
+                  </>
                 ) : (
-                  <g id="face-idle">
-                    <circle cx="76" cy="72" r="4.5" fill="#000000" />
-                    <circle cx="120" cy="72" r="4.5" fill="#000000" />
-                    <path d="M 84 96 Q 100 104 116 96" fill="none" stroke="#000000" strokeWidth="3" strokeLinecap="round" />
-                  </g>
+                  <>
+                    <line x1="68" y1="77" x2="84" y2="77" />
+                    <line x1="116" y1="77" x2="132" y2="77" />
+                  </>
                 )}
               </g>
-            )}
 
-            {/* Mecha Digital Mouth */}
-            {activeChar === 'mecha' && (
-              <g id="mecha-mouth">
-                <rect x="80" y="96" width="40" height="8" rx="2" fill="#0891b2" stroke="#22d3ee" strokeWidth="1.5" />
-                <line x1="85" y1="100" x2="115" y2="100" stroke="#a5f3fc" strokeWidth="2" />
-              </g>
-            )}
-          </g>
+              {/* Ventilation Grills */}
+              <line x1="86" y1="104" x2="114" y2="104" stroke="#22d3ee" strokeWidth="2" strokeLinecap="round" />
+              <line x1="90" y1="110" x2="110" y2="110" stroke="#22d3ee" strokeWidth="2" strokeLinecap="round" />
+            </g>
+          )}
+
+          {/* ========================================================================= */}
+          {/* 7. ARCHETYPE: MA TON (CỬU U MA TÔN - BOT HARD/IMPOSSIBLE)                  */}
+          {/* ========================================================================= */}
+          {activeChar === 'maton' && (
+            <g id="char-maton">
+              {/* Netherworld Gothic Spiked Armor */}
+              <path d="M 22 230 C 30 148, 55 125, 75 118 L 125 118 C 145 125, 170 148, 178 230 Z" fill="url(#maton-armor)" stroke="#dc2626" strokeWidth="2.5" />
+              <path d="M 20 165 L 45 135 L 65 175 Z" fill="#991b1b" stroke="#dc2626" strokeWidth="2" />
+              <path d="M 180 165 L 155 135 L 135 175 Z" fill="#991b1b" stroke="#dc2626" strokeWidth="2" />
+              <path d="M 75 118 L 100 166 L 125 118 L 142 230 L 58 230 Z" fill="#7f1d1d" stroke="#dc2626" strokeWidth="2" />
+              <rect x="62" y="195" width="76" height="16" rx="3" fill="#09090b" stroke="#ef4444" strokeWidth="2" />
+              <circle cx="100" cy="203" r="8" fill="#ef4444" stroke="#fca5a5" strokeWidth="2" />
+
+              {/* Massive Demonic Obsidian Horns */}
+              <path d="M 65 42 C 45 15, 25 -5, 12 5 C 22 30, 48 48, 62 48 Z" fill="url(#maton-horn)" stroke="#ef4444" strokeWidth="2.5" />
+              <path d="M 135 42 C 155 15, 175 -5, 188 5 C 178 30, 152 48, 138 48 Z" fill="url(#maton-horn)" stroke="#ef4444" strokeWidth="2.5" />
+
+              {/* Demonic Spiked Tiara */}
+              <path d="M 72 44 L 80 16 L 100 32 L 120 16 L 128 44 Z" fill="#18181b" stroke="#ef4444" strokeWidth="2.5" />
+              <circle cx="100" cy="42" r="4" fill="#ef4444" />
+
+              {/* Dark Overlord Face */}
+              <ellipse cx="100" cy="85" rx="58" ry="46" fill="#1c1917" stroke="#dc2626" strokeWidth="3" />
+
+              {/* Glowing Red Eyes with Dark Shadow Sockets */}
+              <ellipse cx="76" cy="74" rx="10" ry="6" fill="#450a0a" stroke="#ef4444" strokeWidth="1.5" />
+              <circle cx="76" cy="74" r="4.5" fill="#ef4444" />
+              <circle cx="76" cy="74" r="2" fill="#ffffff" />
+
+              <ellipse cx="124" cy="74" rx="10" ry="6" fill="#450a0a" stroke="#ef4444" strokeWidth="1.5" />
+              <circle cx="124" cy="74" r="4.5" fill="#ef4444" />
+              <circle cx="124" cy="74" r="2" fill="#ffffff" />
+
+              <path d="M 64 66 L 86 60" stroke="#ef4444" strokeWidth="4" strokeLinecap="round" />
+              <path d="M 136 66 L 114 60" stroke="#ef4444" strokeWidth="4" strokeLinecap="round" />
+
+              {/* Sinister Mouth with Sharp Fangs */}
+              <path d="M 78 96 Q 100 88 122 96 Q 124 112 100 114 Q 76 112 78 96 Z" fill="#450a0a" stroke="#dc2626" strokeWidth="2" />
+              <polygon points="84,96 88,102 92,96" fill="#ffffff" />
+              <polygon points="108,96 112,102 116,96" fill="#ffffff" />
+            </g>
+          )}
         </svg>
 
         {/* Character Title Badge */}
