@@ -90,18 +90,32 @@ export default function CharacterSelectModal({ isOpen, onClose }) {
             {/* Rank & Stats */}
             <div className="grid grid-cols-3 gap-1.5 text-center">
               <div className="bg-[#14161f] border border-[#232734] rounded-lg p-1.5">
-                <span className="text-[9px] text-slate-500 block uppercase">Cảnh Giới</span>
+                <span className="text-[9px] text-slate-500 block uppercase font-bold">Cảnh Giới</span>
                 <span className="text-xs font-bold font-mono" style={{ color: currentRank.color }}>
                   {currentRank.icon} {currentRank.name}
                 </span>
               </div>
               <div className="bg-[#14161f] border border-[#232734] rounded-lg p-1.5">
-                <span className="text-[9px] text-slate-500 block uppercase">Elo</span>
-                <span className="text-xs font-bold text-amber-400 font-mono">{elo}</span>
+                <span className="text-[9px] text-slate-500 block uppercase font-bold">Tu Vi</span>
+                <span className="text-xs font-bold text-amber-400 font-mono">{elo}/900</span>
               </div>
               <div className="bg-[#14161f] border border-[#232734] rounded-lg p-1.5">
-                <span className="text-[9px] text-slate-500 block uppercase">Chuỗi Thắng</span>
-                <span className="text-xs font-bold text-rose-400 font-mono">🔥 {winStreak} (Max: {bestStreak})</span>
+                <span className="text-[9px] text-slate-500 block uppercase font-bold">Chuỗi Thắng</span>
+                <span className="text-xs font-bold text-rose-400 font-mono">🔥 {winStreak}</span>
+              </div>
+            </div>
+
+            {/* Cultivation Progress Bar */}
+            <div className="w-full">
+              <div className="flex justify-between text-[10px] text-slate-400 font-mono mb-1">
+                <span>Tiến độ Độ Kiếp</span>
+                <span className="font-bold text-sky-400">{Math.round((elo / 900) * 100)}%</span>
+              </div>
+              <div className="w-full h-1.5 bg-[#14161f] rounded-full overflow-hidden border border-[#232734]">
+                <div
+                  className="h-full bg-gradient-to-r from-sky-500 via-amber-400 to-rose-500 transition-all duration-300"
+                  style={{ width: `${Math.min(100, (elo / 900) * 100)}%` }}
+                />
               </div>
             </div>
 

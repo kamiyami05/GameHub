@@ -7,9 +7,9 @@ import { usePlayerStore, CHARACTERS, getRankInfo } from '@/store/playerStore';
 import CharacterModel from './CharacterModel';
 
 const BOT_CONFIG = {
-  easy: { id: 'panda', name: 'Đạo Sĩ Gấu Trúc', title: 'Luyện Khí Sơ Kỳ', elo: 800, tag: 'Dễ' },
-  hard: { id: 'sage', name: 'Vô Cực Tiên Tôn', title: 'Kim Đan Hậu Kỳ', elo: 1200, tag: 'Vừa' },
-  impossible: { id: 'dragon', name: 'Cửu U Ma Tôn', title: 'Hóa Thần Đại Viên Mãn', elo: 1600, tag: 'Khó' }
+  easy: { id: 'panda', name: 'Đạo Sĩ Gấu Trúc', title: 'Luyện Khí', elo: 80, tag: 'Dễ' },
+  hard: { id: 'sage', name: 'Vô Cực Tiên Tôn', title: 'Hóa Thần', elo: 450, tag: 'Vừa' },
+  impossible: { id: 'maton', name: 'Cửu U Ma Tôn', title: 'Độ Kiếp (Max)', elo: 900, tag: 'Khó' }
 };
 
 export default function CaroGame({ onOpenCharacterSelect }) {

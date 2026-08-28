@@ -67,12 +67,12 @@ export default function Navbar({ onOpenCharacterSelect, onOpenCoffee }) {
           title="Đổi nhân vật & thông tin"
         >
           <span className="text-base shrink-0">{charInfo.icon}</span>
-          <div className="flex flex-col text-left max-w-[90px] sm:max-w-[120px]">
+          <div className="flex flex-col text-left max-w-[100px] sm:max-w-[140px]">
             <span className="font-bold text-slate-200 text-xs truncate leading-tight">
               {username || 'Kỳ Thủ'}
             </span>
-            <span className="text-[10px] font-mono font-semibold" style={{ color: rankInfo.color }}>
-              {elo} Elo
+            <span className="text-[10px] font-mono font-semibold truncate" style={{ color: rankInfo.color }}>
+              {rankInfo.icon} {rankInfo.name} ({elo}/900)
             </span>
           </div>
           <Sparkles className="w-3 h-3 text-slate-500 hover:text-sky-400 shrink-0" />

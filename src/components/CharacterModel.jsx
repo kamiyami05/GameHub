@@ -642,7 +642,7 @@ export default function CharacterModel({
         {size !== 'small' && (
           <div className="mt-1 flex items-center justify-center gap-1.5 px-3 py-0.5 bg-[#14161f] border border-[#232734] rounded-lg text-center text-xs">
             <span className="font-semibold text-slate-200">{displayName}</span>
-            <span className="text-[10px] font-mono text-slate-400">({elo})</span>
+            <span className="text-[10px] font-mono text-slate-400">({elo}/900)</span>
           </div>
         )}
       </div>
