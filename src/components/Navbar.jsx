@@ -12,11 +12,6 @@ export default function Navbar({ onNavigate, onOpenAuth, onOpenCoffee }) {
     setSfxOn(on);
   };
 
-  const handleLogoClick = () => {
-    audio.playClick();
-    onNavigate('lobby');
-  };
-
   const isImageAvatar = profile?.avatar_url && (
     profile.avatar_url.startsWith('http://') ||
     profile.avatar_url.startsWith('https://') ||
@@ -25,52 +20,47 @@ export default function Navbar({ onNavigate, onOpenAuth, onOpenCoffee }) {
   );
 
   return (
-    <header className="w-full flex items-center justify-between px-3 sm:px-6 py-2.5 sm:py-3.5 bg-[#1c1f27]/90 backdrop-blur-md border border-[#3e4248] rounded-2xl mb-4 sm:mb-6 shadow-sm text-xs font-sans">
-      {/* Brand */}
-      <div 
-        onClick={handleLogoClick}
-        className="flex items-center gap-2 sm:gap-2.5 cursor-pointer select-none group shrink-0"
+    <header className="w-full flex items-center justify-between px-3 sm:px-5 py-2.5 bg-[#14161f]/80 backdrop-blur-md border border-[#232734] rounded-2xl mb-6 text-xs">
+      {/* Brand Logo */}
+      <button 
+        onClick={() => { audio.playClick(); onNavigate('lobby'); }}
+        className="flex items-center gap-2 cursor-pointer select-none text-left"
       >
-        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#242833] border border-[#3e4248] flex items-center justify-center text-sm sm:text-base font-black text-sky-400 group-hover:border-sky-500/50 transition-colors shadow-sm">
-          🎮
-        </div>
-        <div>
-          <div className="font-black text-slate-100 text-xs sm:text-sm tracking-tight leading-none">
-            ARCADE<span className="text-sky-400">HUB</span>
-          </div>
-          <span className="text-[8px] sm:text-[10px] text-slate-500 font-mono tracking-wider hidden xs:inline">STRATEGY PORTAL</span>
-        </div>
-      </div>
+        <span className="text-base">🎮</span>
+        <span className="font-bold text-slate-100 text-sm tracking-tight">
+          ARCADE<span className="text-sky-400">.</span>
+        </span>
+      </button>
 
-      {/* Controls & Coffee & Profile */}
-      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-        {/* Buy Me a Coffee Button */}
+      {/* Controls & Profile */}
+      <div className="flex items-center gap-2 shrink-0">
+        {/* Coffee Button */}
         <button
           onClick={onOpenCoffee}
-          className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-500/60 text-amber-300 hover:text-amber-200 font-black text-xs transition-all shadow-sm active:scale-95 cursor-pointer shrink-0"
-          title="Tặng ly cafe ủng hộ tác giả"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#1b1e2a] hover:bg-[#222635] border border-[#282d3d] text-amber-300 font-medium text-xs transition-colors cursor-pointer"
+          title="Tặng ly cafe"
         >
-          <Coffee className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
-          <span className="hidden sm:inline">Tặng ly cafe</span>
+          <Coffee className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Cafe</span>
         </button>
 
         {/* Audio Toggle */}
         <button
           onClick={toggleSfx}
-          className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-[#242833] border border-transparent hover:border-[#3e4248] transition-colors shrink-0 cursor-pointer"
+          className="p-1.5 rounded-xl bg-[#1b1e2a] hover:bg-[#222635] border border-[#282d3d] text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
           title={sfxOn ? "Tắt âm thanh" : "Bật âm thanh"}
         >
           {sfxOn ? (
-            <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400" />
+            <Volume2 className="w-4 h-4 text-sky-400" />
           ) : (
-            <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600" />
+            <VolumeX className="w-4 h-4 text-slate-500" />
           )}
         </button>
 
-        {/* Profile Pill with proper Avatar support */}
-        <div
+        {/* Profile Pill */}
+        <button
           onClick={onOpenAuth}
-          className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-[#242833] hover:bg-[#2d3240] border border-[#3e4248] hover:border-sky-500/50 cursor-pointer transition-all shadow-sm max-w-[110px] sm:max-w-[160px] shrink-0"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#1b1e2a] hover:bg-[#222635] border border-[#282d3d] hover:border-slate-600 text-slate-200 transition-colors cursor-pointer max-w-[120px] sm:max-w-[160px]"
         >
           {isImageAvatar ? (
             <img 
@@ -79,18 +69,18 @@ export default function Navbar({ onNavigate, onOpenAuth, onOpenCoffee }) {
               className="w-5 h-5 rounded-full object-cover shrink-0" 
             />
           ) : profile?.avatar_url ? (
-            <span className="w-5 h-5 rounded-full bg-[#14161b] flex items-center justify-center text-xs shrink-0 select-none">
+            <span className="w-5 h-5 rounded-full bg-[#0c0d12] flex items-center justify-center text-xs shrink-0 select-none">
               {profile.avatar_url}
             </span>
           ) : (
-            <span className="w-5 h-5 rounded-full bg-sky-600/30 flex items-center justify-center text-[10px] font-black text-sky-400 shrink-0 select-none">
+            <span className="w-5 h-5 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center text-[10px] font-bold shrink-0">
               {profile?.username?.charAt(0)?.toUpperCase() || 'K'}
             </span>
           )}
-          <span className="font-bold text-slate-200 truncate text-[11px] sm:text-xs">
+          <span className="font-semibold text-slate-200 truncate text-xs">
             {profile?.username || 'Khách'}
           </span>
-        </div>
+        </button>
       </div>
     </header>
   );

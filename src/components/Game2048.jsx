@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { ArrowLeft, RotateCcw, BookOpen, Trophy, LogOut, X } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Trophy, X } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { audio } from '@/lib/audio';
 import { useAuthStore } from '@/store/authStore';
@@ -10,7 +10,6 @@ const SIZE = 4;
 export default function Game2048({ onBack }) {
   const { profile, record2048Score, getLeaderboard } = useAuthStore();
   const [viewMode, setViewMode] = useState('menu'); // 'menu' | 'playing'
-  const [showInstructions, setShowInstructions] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [leaderboardData, setLeaderboardData] = useState([]);
 
@@ -120,7 +119,7 @@ export default function Game2048({ onBack }) {
       if (reached2048 && !won) {
         setWon(true);
         audio.playWin();
-        confetti({ particleCount: 80, spread: 70 });
+        confetti({ particleCount: 70, spread: 60 });
       }
 
       if (checkGameOver(grid)) {
@@ -167,18 +166,18 @@ export default function Game2048({ onBack }) {
 
   const getTileClass = (val) => {
     switch (val) {
-      case 2: return 'bg-[#242833] text-slate-200 border border-[#3e4248]';
-      case 4: return 'bg-[#2d3240] text-slate-100 border border-[#474f63]';
-      case 8: return 'bg-sky-600 text-white font-black shadow-sm';
-      case 16: return 'bg-sky-700 text-white font-black shadow-sm';
-      case 32: return 'bg-teal-600 text-white font-black shadow-sm';
-      case 64: return 'bg-emerald-600 text-white font-black shadow-sm';
-      case 128: return 'bg-amber-600 text-white font-black text-xl sm:text-2xl shadow-sm';
-      case 256: return 'bg-orange-600 text-white font-black text-xl sm:text-2xl shadow-sm';
-      case 512: return 'bg-rose-600 text-white font-black text-xl sm:text-2xl shadow-sm';
-      case 1024: return 'bg-purple-600 text-white font-black text-lg sm:text-xl shadow-md';
-      case 2048: return 'bg-pink-600 text-white font-black text-lg sm:text-xl shadow-lg shadow-pink-500/50';
-      default: return 'bg-[#14161b]/60 border border-[#3e4248]/40';
+      case 2: return 'bg-[#1b1e2a] text-slate-200';
+      case 4: return 'bg-[#222736] text-slate-100';
+      case 8: return 'bg-[#0369a1] text-white';
+      case 16: return 'bg-[#0284c7] text-white';
+      case 32: return 'bg-[#0d9488] text-white';
+      case 64: return 'bg-[#059669] text-white';
+      case 128: return 'bg-[#d97706] text-white text-xl sm:text-2xl';
+      case 256: return 'bg-[#ea580c] text-white text-xl sm:text-2xl';
+      case 512: return 'bg-[#e11d48] text-white text-xl sm:text-2xl';
+      case 1024: return 'bg-[#9333ea] text-white text-lg sm:text-xl';
+      case 2048: return 'bg-[#c026d3] text-white text-lg sm:text-xl';
+      default: return 'bg-[#12141c] text-transparent';
     }
   };
 
@@ -186,77 +185,42 @@ export default function Game2048({ onBack }) {
     return (
       <div className="w-full relative">
         <GamePortalMenu
-          title="2048 Classic"
+          title="2048"
           icon="🔢"
-          tagline="Ghép nối các khối số trên bàn cờ 4x4 để chinh phục con số 2048 huyền thoại"
           onStartGame={handleStartGame}
-          onOpenInstructions={() => setShowInstructions(true)}
           onOpenLeaderboard={open2048Leaderboard}
           onExit={onBack}
         />
 
-        {/* Instructions Modal */}
-        {showInstructions && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
-            <div className="w-full max-w-md bg-[#1c1f27] border border-[#3e4248] rounded-3xl p-6 relative shadow-2xl">
-              <button
-                onClick={() => setShowInstructions(false)}
-                className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-[#242833] transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-
-              <div className="flex items-center gap-2 mb-4 text-amber-400">
-                <BookOpen className="w-5 h-5" />
-                <h3 className="text-base font-black uppercase tracking-wide">Hướng Dẫn 2048</h3>
-              </div>
-
-              <div className="space-y-2.5 text-xs text-slate-300 leading-relaxed font-medium">
-                <p>• <strong>Điều khiển:</strong> Dùng 4 phím mũi tên hoặc <strong>W, A, S, D</strong> trên máy tính, hoặc <strong>vuốt màn hình</strong> trên điện thoại.</p>
-                <p>• <strong>Ghép số:</strong> Khi 2 ô có cùng giá trị chạm vào nhau, chúng sẽ gộp lại thành 1 ô có giá trị gấp đôi (2+2=4, 4+4=8, ...).</p>
-                <p>• <strong>Mẹo hay:</strong> Luôn dồn khối số lớn nhất về một góc cố định (ví dụ: góc dưới cùng bên phải) và xếp các số giảm dần xung quanh.</p>
-              </div>
-
-              <button
-                onClick={() => setShowInstructions(false)}
-                className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs transition-colors mt-6 shadow-sm"
-              >
-                Đã Hiểu
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Leaderboard Modal */}
         {showLeaderboard && (
           <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
-            <div className="w-full max-w-md bg-[#1c1f27] border border-[#3e4248] rounded-3xl p-6 relative shadow-2xl">
+            <div className="w-full max-w-sm bg-[#14161f] border border-[#232734] rounded-2xl p-5 relative">
               <button
                 onClick={() => setShowLeaderboard(false)}
-                className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-[#242833] transition-colors"
+                className="absolute top-4 right-4 p-1 rounded-lg text-slate-400 hover:text-white"
               >
                 <X className="w-4 h-4" />
               </button>
 
               <div className="flex items-center gap-2 mb-4 text-amber-400">
-                <Trophy className="w-5 h-5" />
-                <h3 className="text-base font-black uppercase tracking-wide">Bảng Xếp Hạng 2048</h3>
+                <Trophy className="w-4 h-4" />
+                <h3 className="text-sm font-bold">Xếp hạng 2048</h3>
               </div>
 
-              <div className="max-h-60 overflow-y-auto space-y-2">
+              <div className="max-h-60 overflow-y-auto space-y-1.5">
                 {leaderboardData.length === 0 ? (
-                  <div className="p-4 rounded-2xl bg-[#14161b] border border-[#3e4248] text-center text-xs text-slate-400">
-                    <p className="font-bold text-slate-200">Chế độ Offline</p>
-                    <p className="text-[11px] text-slate-500 mt-1">Kỷ lục hiện tại của bạn: <strong className="text-amber-400 font-mono">{profile?.game_2048_highscore || 0} điểm</strong></p>
+                  <div className="p-4 rounded-xl bg-[#0f1016] text-center text-xs text-slate-400">
+                    <p>Kỷ lục: <strong className="text-amber-400">{profile?.game_2048_highscore || 0}</strong></p>
                   </div>
                 ) : (
                   leaderboardData.map((p, idx) => (
-                    <div key={p.id || idx} className="flex items-center justify-between p-3 rounded-2xl bg-[#14161b] border border-[#3e4248] text-xs">
-                      <div className="flex items-center gap-2.5 font-bold text-slate-200">
+                    <div key={p.id || idx} className="flex items-center justify-between p-2.5 rounded-xl bg-[#0f1016] border border-[#1d212c] text-xs">
+                      <div className="flex items-center gap-2 font-medium text-slate-200">
                         <span className="font-mono">{idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`}</span>
-                        <span>{p.username}</span>
+                        <span className="truncate max-w-[130px]">{p.username}</span>
                       </div>
-                      <span className="font-black text-sky-400 font-mono">{p.game_2048_highscore} điểm</span>
+                      <span className="font-bold text-sky-400 font-mono">{p.game_2048_highscore}</span>
                     </div>
                   ))
                 )}
@@ -264,7 +228,7 @@ export default function Game2048({ onBack }) {
 
               <button
                 onClick={() => setShowLeaderboard(false)}
-                className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs transition-colors mt-6 shadow-sm"
+                className="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs transition-colors mt-4"
               >
                 Đóng
               </button>
@@ -280,45 +244,45 @@ export default function Game2048({ onBack }) {
     <div 
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      className="w-full max-w-lg flex flex-col items-center gap-4 animate-fadeIn pb-8 mx-auto"
+      className="w-full max-w-sm sm:max-w-md flex flex-col items-center gap-3.5 animate-fadeIn pb-6 mx-auto"
     >
       {/* Top Bar */}
       <div className="w-full flex items-center justify-between">
         <button
           onClick={() => setViewMode('menu')}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#1c1f27] hover:bg-[#242833] border border-[#3e4248] text-slate-300 hover:text-white text-xs font-bold transition-all shadow-sm"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#14161f] hover:bg-[#1a1d28] border border-[#232734] text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Menu Game</span>
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Menu</span>
         </button>
 
-        <div className="flex gap-2">
-          <div className="px-4 py-1.5 bg-[#1c1f27] border border-[#3e4248] rounded-xl text-center font-mono shadow-sm">
-            <span className="text-[10px] text-slate-500 font-bold block uppercase">Điểm</span>
-            <span className="text-sm font-black text-sky-400">{score}</span>
+        <div className="flex items-center gap-1.5">
+          <div className="px-3 py-1 bg-[#14161f] border border-[#232734] rounded-xl text-center font-mono">
+            <span className="text-[9px] text-slate-500 font-bold block uppercase">Điểm</span>
+            <span className="text-xs font-bold text-sky-400">{score}</span>
           </div>
-          <div className="px-4 py-1.5 bg-[#1c1f27] border border-[#3e4248] rounded-xl text-center font-mono shadow-sm">
-            <span className="text-[10px] text-slate-500 font-bold block uppercase">Kỷ lục</span>
-            <span className="text-sm font-black text-amber-400">{bestScore}</span>
+          <div className="px-3 py-1 bg-[#14161f] border border-[#232734] rounded-xl text-center font-mono">
+            <span className="text-[9px] text-slate-500 font-bold block uppercase">Kỷ lục</span>
+            <span className="text-xs font-bold text-amber-400">{bestScore}</span>
           </div>
           <button
             onClick={initGame}
-            className="p-2.5 rounded-xl bg-[#1c1f27] hover:bg-[#242833] border border-[#3e4248] text-slate-300 transition-colors shadow-sm"
+            className="p-2 rounded-xl bg-[#14161f] hover:bg-[#1a1d28] border border-[#232734] text-slate-300 transition-colors cursor-pointer"
             title="Chơi lại"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
       {/* 2048 4x4 Grid Board */}
-      <div className="relative w-full aspect-square bg-[#1c1f27] border border-[#3e4248] rounded-3xl p-4 shadow-2xl">
-        <div className="w-full h-full grid grid-cols-4 grid-rows-4 gap-3">
+      <div className="relative w-full aspect-square bg-[#14161f] border border-[#232734] rounded-2xl p-2.5 shadow-lg">
+        <div className="w-full h-full grid grid-cols-4 grid-rows-4 gap-2">
           {board.map((row, r) => 
             row.map((val, c) => (
               <div
                 key={`${r}-${c}`}
-                className={`w-full h-full rounded-2xl flex items-center justify-center font-black text-2xl sm:text-3xl transition-all duration-100 ${getTileClass(val)}`}
+                className={`w-full h-full rounded-xl flex items-center justify-center font-bold text-xl sm:text-2xl transition-all duration-100 ${getTileClass(val)}`}
               >
                 {val > 0 ? val : ''}
               </div>
@@ -328,30 +292,26 @@ export default function Game2048({ onBack }) {
 
         {/* Game Over Overlay */}
         {gameOver && (
-          <div className="absolute inset-0 bg-[#14161b]/90 backdrop-blur-sm rounded-3xl flex flex-col items-center justify-center gap-3 p-4 animate-fadeIn">
-            <h3 className="text-2xl font-black text-slate-100">Hết Nước Đi!</h3>
-            <p className="text-xs text-slate-400 font-medium">Tổng điểm đạt được: <strong className="text-amber-400 font-mono text-sm">{score}</strong></p>
+          <div className="absolute inset-0 bg-[#0c0d12]/90 rounded-2xl flex flex-col items-center justify-center gap-2.5 p-4 animate-fadeIn">
+            <h3 className="text-lg font-bold text-slate-100">Hết nước đi!</h3>
+            <p className="text-xs text-slate-400">Điểm: <strong className="text-amber-400 font-mono">{score}</strong></p>
             <button
               onClick={initGame}
-              className="px-6 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-black text-xs transition-colors shadow-md"
+              className="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs transition-colors cursor-pointer mt-1"
             >
-              Chơi Ván Mới
+              Chơi lại
             </button>
           </div>
         )}
       </div>
 
-      <div className="w-full flex items-center justify-between">
-        <p className="text-xs text-slate-500 font-medium">
-          Dùng phím mũi tên / WASD hoặc vuốt màn hình
-        </p>
-
+      <div className="w-full flex items-center justify-between text-xs text-slate-500 px-1">
+        <span>Vuốt hoặc dùng phím mũi tên</span>
         <button
           onClick={onBack}
-          className="px-3.5 py-1.5 rounded-xl bg-[#1c1f27] hover:bg-rose-500/10 border border-[#3e4248] hover:border-rose-500/30 text-slate-400 hover:text-rose-300 font-bold text-xs flex items-center gap-1.5 transition-all"
+          className="text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
         >
-          <LogOut className="w-3.5 h-3.5" />
-          <span>Thoát Ra Sảnh</span>
+          Thoát
         </button>
       </div>
     </div>
