@@ -67,21 +67,21 @@ export const RANKS = [
 
 export const getRankInfo = (elo) => {
   const val = Math.max(0, Math.min(900, Number(elo) || 0));
-  if (val === 0) return RANKS[0]; // Phàm Nhân
+  if (val === 0) return RANKS[0]; // 0 = Phàm Nhân
   for (let i = RANKS.length - 1; i >= 1; i--) {
     if (val >= RANKS[i].minElo) return RANKS[i];
   }
   return RANKS[0];
 };
 
-const STORAGE_KEY = 'caro_arena_player_data';
+const STORAGE_KEY = 'caro_cultivation_v1_data';
 
 const getInitialData = () => {
   if (typeof window === 'undefined') {
     return {
       characterId: 'panda',
       username: 'Kỳ Thủ',
-      elo: 0, // 0 = Phàm Nhân
+      elo: 0, // Mặc định bắt đầu là Phàm Nhân (0 điểm)
       wins: 0,
       losses: 0,
       draws: 0,
@@ -95,11 +95,9 @@ const getInitialData = () => {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const data = JSON.parse(raw);
-      // Clamp previously stored Elo to 0 - 900 range
       let parsedElo = Number(data.elo);
-      if (isNaN(parsedElo)) parsedElo = 0;
+      if (isNaN(parsedElo) || parsedElo < 0) parsedElo = 0;
       if (parsedElo > 900) parsedElo = 900;
-      if (parsedElo < 0) parsedElo = 0;
 
       return {
         characterId: data.characterId || 'panda',
@@ -118,7 +116,7 @@ const getInitialData = () => {
   return {
     characterId: 'panda',
     username: 'Kỳ Thủ',
-    elo: 0, // 0 = Phàm Nhân
+    elo: 0, // Mặc định bắt đầu là Phàm Nhân (0 điểm)
     wins: 0,
     losses: 0,
     draws: 0,
@@ -134,7 +132,6 @@ export const usePlayerStore = create((set, get) => ({
   updateProfile: (partial) => {
     set((state) => {
       const updated = { ...state, ...partial };
-      // Clamp Elo to max 900, min 0
       if (typeof updated.elo === 'number') {
         updated.elo = Math.max(0, Math.min(900, Math.round(updated.elo)));
       }
@@ -156,6 +153,16 @@ export const usePlayerStore = create((set, get) => ({
     });
   },
 
+  resetToPhamNhan: () => {
+    get().updateProfile({
+      elo: 0,
+      wins: 0,
+      losses: 0,
+      draws: 0,
+      winStreak: 0
+    });
+  },
+
   recordMatchResult: (difficulty, outcome, moveCount) => {
     const state = get();
     let eloChange = 0;
@@ -165,7 +172,6 @@ export const usePlayerStore = create((set, get) => ({
     let newStreak = state.winStreak;
 
     if (outcome === 'win') {
-      // Points gained per difficulty
       if (difficulty === 'impossible') {
         eloChange = 40; // Hard bot (Độ Kiếp)
       } else if (difficulty === 'hard') {
@@ -190,7 +196,7 @@ export const usePlayerStore = create((set, get) => ({
       newDraws += 1;
     }
 
-    // Clamped strictly between 0 and 900
+    // Clamped strictly between 0 (Phàm Nhân) and 900 (Độ Kiếp)
     const newElo = Math.max(0, Math.min(900, state.elo + eloChange));
     const effectiveChange = newElo - state.elo;
     const newBestStreak = Math.max(state.bestStreak, newStreak);
