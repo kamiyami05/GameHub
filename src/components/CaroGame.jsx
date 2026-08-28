@@ -1,18 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, RotateCcw, Undo2, LogOut, Trophy, X } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { RotateCcw, Undo2, Sparkles, Trophy } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { CARO_SIZE, EMPTY, PLAYER, AI, checkCaroWinner, getCaroBestMove } from '@/lib/caroAI';
 import { audio } from '@/lib/audio';
-import { useAuthStore } from '@/store/authStore';
-import GamePortalMenu from './GamePortalMenu';
-import BotCharacterModel from './BotCharacterModel';
+import { usePlayerStore, CHARACTERS, getRankInfo } from '@/store/playerStore';
+import CharacterModel from './CharacterModel';
 
-export default function CaroGame({ onBack }) {
-  const { profile, recordCaroMatch, getLeaderboard } = useAuthStore();
-  const [viewMode, setViewMode] = useState('menu'); // 'menu' | 'playing'
-  const [showLeaderboard, setShowLeaderboard] = useState(false);
-  const [leaderboardData, setLeaderboardData] = useState([]);
+const BOT_CONFIG = {
+  easy: { id: 'panda', name: 'Đạo Sĩ Gấu Trúc', title: 'Luyện Khí Sơ Kỳ', elo: 800, tag: 'Dễ' },
+  hard: { id: 'sage', name: 'Vô Cực Tiên Tôn', title: 'Kim Đan Hậu Kỳ', elo: 1200, tag: 'Vừa' },
+  impossible: { id: 'dragon', name: 'Cửu U Ma Tôn', title: 'Hóa Thần Đại Viên Mãn', elo: 1600, tag: 'Khó' }
+};
 
+export default function CaroGame({ onOpenCharacterSelect }) {
+  const { characterId, username, elo, winStreak, bestStreak, recordMatchResult } = usePlayerStore();
   const [board, setBoard] = useState(() => Array.from({ length: CARO_SIZE }, () => Array(CARO_SIZE).fill(EMPTY)));
   const [moveHistory, setMoveHistory] = useState([]);
   const [difficulty, setDifficulty] = useState('hard');
@@ -21,6 +22,9 @@ export default function CaroGame({ onBack }) {
   const [winningCells, setWinningCells] = useState(null);
   const [statusText, setStatusText] = useState('Lượt của bạn (X)');
   const [matchResult, setMatchResult] = useState(null);
+
+  // Dynamic emotional states
+  const [playerEmotion, setPlayerEmotion] = useState('idle');
   const [botEmotion, setBotEmotion] = useState('idle');
 
   const canvasRef = useRef(null);
@@ -28,26 +32,10 @@ export default function CaroGame({ onBack }) {
   const animFrameRef = useRef(null);
   const winTimerRef = useRef(null);
 
-  const botConfig = {
-    easy: { name: 'Đạo Sĩ Gấu Trúc', elo: 800, tag: 'Dễ' },
-    hard: { name: 'Vô Cực Tiên Tôn', elo: 1200, tag: 'Vừa' },
-    impossible: { name: 'Cửu U Ma Tôn', elo: 1600, tag: 'Khó' }
-  };
+  const playerChar = CHARACTERS[characterId] || CHARACTERS.panda;
+  const currentRank = getRankInfo(elo);
 
-  const caroDifficulties = [
-    { id: 'easy', label: 'Dễ (800)' },
-    { id: 'hard', label: 'Vừa (1200)' },
-    { id: 'impossible', label: 'Khó (1600)' }
-  ];
-
-  const handleStartGame = (diffId) => {
-    const selectedDiff = diffId || difficulty;
-    setDifficulty(selectedDiff);
-    startNewGame(selectedDiff);
-    setViewMode('playing');
-  };
-
-  const startNewGame = (diff = difficulty) => {
+  const startNewGame = useCallback((diff = difficulty) => {
     if (winTimerRef.current) clearTimeout(winTimerRef.current);
     setBoard(Array.from({ length: CARO_SIZE }, () => Array(CARO_SIZE).fill(EMPTY)));
     setMoveHistory([]);
@@ -55,11 +43,12 @@ export default function CaroGame({ onBack }) {
     setPlayerTurn(true);
     setWinningCells(null);
     setMatchResult(null);
+    setPlayerEmotion('idle');
     setBotEmotion('idle');
     particlesRef.current = [];
     setStatusText('Lượt của bạn (X)');
     audio.playClick();
-  };
+  }, [difficulty]);
 
   const handleUndo = () => {
     if (isGameOver || moveHistory.length === 0 || !playerTurn) return;
@@ -78,6 +67,8 @@ export default function CaroGame({ onBack }) {
     setBoard(newBoard);
     setMoveHistory(newHistory);
     setPlayerTurn(true);
+    setPlayerEmotion('idle');
+    setBotEmotion('idle');
     setStatusText('Lượt của bạn (X)');
     audio.playClick();
   };
@@ -134,6 +125,7 @@ export default function CaroGame({ onBack }) {
         return;
       }
 
+      setPlayerEmotion('confident');
       setBotEmotion('thinking');
       setPlayerTurn(false);
       setStatusText('Bot đang tính... 🧠');
@@ -155,6 +147,7 @@ export default function CaroGame({ onBack }) {
           }
 
           setBotEmotion('idle');
+          setPlayerEmotion('idle');
         }
         setPlayerTurn(true);
         setStatusText('Lượt của bạn (X)');
@@ -169,44 +162,37 @@ export default function CaroGame({ onBack }) {
     let outcome = 'draw';
     if (result.winner === PLAYER) {
       outcome = 'win';
+      setPlayerEmotion('happy');
       setBotEmotion('sad');
       audio.playWin();
-      setStatusText('Bạn thắng!');
-      confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+      setStatusText('Chiến Thắng!');
+      confetti({ particleCount: 90, spread: 75, origin: { y: 0.6 } });
     } else if (result.winner === AI) {
       outcome = 'loss';
+      setPlayerEmotion('sad');
       setBotEmotion('happy');
       audio.playLose();
-      setStatusText('Bot thắng!');
+      setStatusText('Thất Bại!');
     } else {
-      setBotEmotion('taunt');
+      outcome = 'draw';
+      setPlayerEmotion('idle');
+      setBotEmotion('idle');
       setStatusText('Hòa cờ!');
     }
 
-    winTimerRef.current = setTimeout(async () => {
-      try {
-        const res = await recordCaroMatch(difficulty, outcome, history.length);
-        setMatchResult({
-          outcome,
-          eloChange: res.elo_change,
-          newElo: res.new_elo
-        });
-      } catch {
-        setMatchResult({ outcome, eloChange: 0, newElo: profile?.caro_elo || 1000 });
-      }
-    }, 2000);
-  };
-
-  const openCaroLeaderboard = async () => {
-    setShowLeaderboard(true);
-    const data = await getLeaderboard('caro', 20);
-    setLeaderboardData(data || []);
+    winTimerRef.current = setTimeout(() => {
+      const res = recordMatchResult(difficulty, outcome, history.length);
+      setMatchResult({
+        outcome,
+        eloChange: res.eloChange,
+        newElo: res.newElo,
+        newStreak: res.newStreak
+      });
+    }, 1800);
   };
 
   // Canvas Engine 20x20 Playing Inside Cell Squares
   useEffect(() => {
-    if (viewMode !== 'playing') return;
-
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -353,103 +339,117 @@ export default function CaroGame({ onBack }) {
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [viewMode, board, moveHistory, winningCells]);
+  }, [board, moveHistory, winningCells]);
 
-  // Main Menu Screen
-  if (viewMode === 'menu') {
-    return (
-      <div className="w-full flex flex-col items-center">
-        <GamePortalMenu
-          title="Cờ Caro"
-          icon="⚔️"
-          difficulties={caroDifficulties}
-          onStartGame={handleStartGame}
-          onOpenLeaderboard={openCaroLeaderboard}
-          onExit={onBack}
-        />
+  const activeBot = BOT_CONFIG[difficulty];
 
-        {/* Leaderboard Modal */}
-        {showLeaderboard && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
-            <div className="w-full max-w-sm bg-[#14161f] border border-[#232734] rounded-2xl p-5 relative">
-              <button
-                onClick={() => setShowLeaderboard(false)}
-                className="absolute top-4 right-4 p-1 rounded-lg text-slate-400 hover:text-white"
-              >
-                <X className="w-4 h-4" />
-              </button>
-
-              <div className="flex items-center gap-2 mb-4 text-amber-400">
-                <Trophy className="w-4 h-4" />
-                <h3 className="text-sm font-bold">Xếp hạng Caro</h3>
-              </div>
-
-              <div className="max-h-60 overflow-y-auto space-y-1.5">
-                {leaderboardData.length === 0 ? (
-                  <div className="p-4 rounded-xl bg-[#0f1016] text-center text-xs text-slate-400">
-                    <p>Kỷ lục của bạn: <strong className="text-amber-400">{profile?.caro_elo || 1000} Elo</strong></p>
-                  </div>
-                ) : (
-                  leaderboardData.map((p, idx) => (
-                    <div key={p.id || idx} className="flex items-center justify-between p-2.5 rounded-xl bg-[#0f1016] border border-[#1d212c] text-xs">
-                      <div className="flex items-center gap-2 font-medium text-slate-200">
-                        <span className="font-mono">{idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`}</span>
-                        <span className="truncate max-w-[130px]">{p.username}</span>
-                      </div>
-                      <span className="font-bold text-amber-400 font-mono">{p.caro_elo} Elo</span>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <button
-                onClick={() => setShowLeaderboard(false)}
-                className="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs transition-colors mt-4"
-              >
-                Đóng
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // Playing Screen
   return (
     <div className="w-full flex flex-col items-center animate-fadeIn pb-6">
       {/* Top Controls Bar */}
-      <div className="w-full flex items-center justify-between mb-3.5 px-1">
-        <button
-          onClick={() => setViewMode('menu')}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#14161f] hover:bg-[#1a1d28] border border-[#232734] text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Menu</span>
-        </button>
-
+      <div className="w-full flex items-center justify-between mb-3 px-1">
         {/* Difficulty Selector */}
         <div className="flex bg-[#14161f] border border-[#232734] rounded-xl p-0.5 gap-0.5">
           {['easy', 'hard', 'impossible'].map(level => (
             <button
               key={level}
               onClick={() => { setDifficulty(level); startNewGame(level); }}
-              className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                 difficulty === level
-                  ? 'bg-[#222634] text-sky-400'
+                  ? 'bg-[#222634] text-sky-400 font-bold'
                   : 'text-slate-500 hover:text-slate-300'
               }`}
             >
-              {botConfig[level].tag}
+              {BOT_CONFIG[level].tag} ({BOT_CONFIG[level].elo})
             </button>
           ))}
         </div>
+
+        {/* Action Controls */}
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={handleUndo}
+            disabled={isGameOver || moveHistory.length === 0 || !playerTurn}
+            className="flex items-center gap-1 px-3 py-1 rounded-xl bg-[#14161f] hover:bg-[#1a1d28] disabled:opacity-30 disabled:cursor-not-allowed border border-[#232734] text-slate-300 font-semibold text-xs transition-colors cursor-pointer"
+            title="Đi lại nước trước"
+          >
+            <Undo2 className="w-3.5 h-3.5" />
+            <span>Đi lại</span>
+          </button>
+
+          <button
+            onClick={() => startNewGame(difficulty)}
+            className="flex items-center gap-1 px-3 py-1 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs transition-colors cursor-pointer"
+            title="Bắt đầu ván mới"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Ván mới</span>
+          </button>
+        </div>
       </div>
 
-      {/* Main Game Layout */}
-      <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-        {/* Left / Top: Canvas Board */}
-        <div className="lg:col-span-8 flex flex-col items-center w-full">
+      {/* Mobile Top Mini Duel Bar */}
+      <div className="lg:hidden w-full max-w-[560px] grid grid-cols-2 gap-2 mb-3">
+        {/* Mobile Player Mini Pill */}
+        <div 
+          onClick={onOpenCharacterSelect}
+          className="bg-[#14161f] border border-[#232734] rounded-xl p-2 flex items-center justify-between cursor-pointer"
+        >
+          <div className="flex items-center gap-2 truncate">
+            <span className="text-xl">{playerChar.icon}</span>
+            <div className="truncate">
+              <span className="text-xs font-bold text-slate-200 block truncate">{username} (X)</span>
+              <span className="text-[10px] font-mono text-amber-400">{elo} Elo</span>
+            </div>
+          </div>
+          <Sparkles className="w-3 h-3 text-slate-500 shrink-0" />
+        </div>
+
+        {/* Mobile Bot Mini Pill */}
+        <div className="bg-[#14161f] border border-[#232734] rounded-xl p-2 flex items-center justify-between">
+          <div className="flex items-center gap-2 truncate">
+            <span className="text-xl">{difficulty === 'easy' ? '🐼' : difficulty === 'hard' ? '🧙' : '🐉'}</span>
+            <div className="truncate">
+              <span className="text-xs font-bold text-slate-200 block truncate">{activeBot.name} (O)</span>
+              <span className="text-[10px] font-mono text-rose-400">{activeBot.elo} Elo</span>
+            </div>
+          </div>
+          <span className="text-[10px] text-slate-500 font-mono">AI</span>
+        </div>
+      </div>
+
+      {/* Main Game Layout: 3 Columns on Desktop, Board on Top on Mobile */}
+      <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+        {/* Left Column: Player Character Avatar & Stats (Desktop) */}
+        <div className="hidden lg:flex lg:col-span-3 flex-col items-center gap-3">
+          <div className="w-full bg-[#14161f] border border-[#232734] rounded-2xl p-3 flex flex-col items-center">
+            <CharacterModel
+              characterId={characterId}
+              emotion={playerEmotion}
+              size="medium"
+              displayName={username}
+              elo={elo}
+              showDialogue={true}
+            />
+            <button
+              onClick={onOpenCharacterSelect}
+              className="mt-2 text-[11px] text-slate-400 hover:text-sky-400 flex items-center gap-1 font-semibold transition-colors cursor-pointer"
+            >
+              <Sparkles className="w-3 h-3" />
+              <span>Đổi tạo hình nhân vật</span>
+            </button>
+          </div>
+
+          {/* Player Rank Card */}
+          <div className="w-full bg-[#14161f] border border-[#232734] rounded-xl p-2.5 text-center">
+            <span className="text-[10px] text-slate-500 block uppercase">Cảnh Giới</span>
+            <span className="text-xs font-bold font-mono" style={{ color: currentRank.color }}>
+              {currentRank.icon} {currentRank.name}
+            </span>
+          </div>
+        </div>
+
+        {/* Center: Big Canvas Board */}
+        <div className="lg:col-span-6 flex flex-col items-center w-full">
           <div className="w-full max-w-[560px] aspect-square bg-[#0f1016] border border-[#232734] rounded-2xl overflow-hidden shadow-lg relative">
             <canvas
               ref={canvasRef}
@@ -457,65 +457,36 @@ export default function CaroGame({ onBack }) {
               className="w-full h-full cursor-pointer touch-none block"
             />
           </div>
+
+          {/* Turn Status Bar */}
+          <div className="w-full max-w-[560px] flex items-center justify-between px-3 py-1.5 mt-2 bg-[#14161f] border border-[#232734] rounded-xl text-xs">
+            <span className="font-bold text-sky-400">{statusText}</span>
+            <span className="text-[10px] text-slate-500 font-mono">{moveHistory.length} nước đi</span>
+          </div>
         </div>
 
-        {/* Right / Bottom: Bot, Stats & Actions */}
-        <div className="lg:col-span-4 flex flex-col gap-3 w-full max-w-[560px] lg:max-w-none mx-auto">
-          {/* Bot Model */}
+        {/* Right Column: Bot Character Avatar & Stats */}
+        <div className="lg:col-span-3 flex flex-col items-center gap-3 w-full max-w-[560px] lg:max-w-none mx-auto">
           <div className="w-full bg-[#14161f] border border-[#232734] rounded-2xl p-3 flex flex-col items-center">
-            <BotCharacterModel
-              emotion={botEmotion}
+            <CharacterModel
+              isBot={true}
               difficulty={difficulty}
+              emotion={botEmotion}
               size="medium"
-              botName={botConfig[difficulty].name}
-              botElo={botConfig[difficulty].elo}
+              displayName={activeBot.name}
+              elo={activeBot.elo}
               showDialogue={true}
               autoTauntInterval={12000}
             />
           </div>
 
-          {/* Stats Bar */}
-          <div className="w-full grid grid-cols-2 gap-2">
-            {/* Player Card */}
-            <div className="bg-[#14161f] border border-[#232734] rounded-xl p-2.5 flex flex-col items-center text-center">
-              <span className="text-xs font-bold text-slate-200 truncate w-full">{profile?.username || 'Bạn'} (X)</span>
-              <span className="text-[11px] text-amber-400 font-mono mt-0.5">{profile?.caro_elo || 1000} Elo</span>
-            </div>
-
-            {/* Status */}
-            <div className="bg-[#14161f] border border-[#232734] rounded-xl p-2.5 flex flex-col items-center justify-center text-center">
-              <span className="text-xs font-bold text-sky-400 leading-tight">{statusText}</span>
-              <span className="text-[10px] text-slate-500 font-mono mt-0.5">{moveHistory.length} nước</span>
-            </div>
+          {/* Bot Difficulty Tag Card */}
+          <div className="w-full bg-[#14161f] border border-[#232734] rounded-xl p-2.5 text-center">
+            <span className="text-[10px] text-slate-500 block uppercase">Đối Thủ AI</span>
+            <span className="text-xs font-bold text-rose-400 font-mono">
+              {activeBot.title}
+            </span>
           </div>
-
-          {/* Actions */}
-          <div className="flex gap-2 w-full">
-            <button
-              onClick={handleUndo}
-              disabled={isGameOver || moveHistory.length === 0 || !playerTurn}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#14161f] hover:bg-[#1a1d28] disabled:opacity-30 disabled:cursor-not-allowed border border-[#232734] text-slate-300 font-semibold text-xs transition-colors cursor-pointer"
-            >
-              <Undo2 className="w-3.5 h-3.5" />
-              <span>Đi lại</span>
-            </button>
-
-            <button
-              onClick={() => startNewGame(difficulty)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs transition-colors cursor-pointer"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Ván mới</span>
-            </button>
-          </div>
-
-          <button
-            onClick={onBack}
-            className="w-full py-2 rounded-xl bg-transparent hover:bg-rose-500/10 text-slate-400 hover:text-rose-300 font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>Thoát ra sảnh</span>
-          </button>
         </div>
       </div>
 
@@ -523,12 +494,14 @@ export default function CaroGame({ onBack }) {
       {matchResult && (
         <div className="fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
           <div className="w-full max-w-xs bg-[#14161f] border border-[#232734] rounded-2xl p-5 text-center flex flex-col items-center gap-3 shadow-xl">
-            <BotCharacterModel
-              emotion={matchResult.outcome === 'win' ? 'sad' : (matchResult.outcome === 'loss' ? 'happy' : 'taunt')}
+            {/* Bot Model with reaction and interactive poke */}
+            <CharacterModel
+              isBot={true}
               difficulty={difficulty}
+              emotion={matchResult.outcome === 'win' ? 'sad' : (matchResult.outcome === 'loss' ? 'happy' : 'idle')}
               size="medium"
-              botName={botConfig[difficulty].name}
-              botElo={botConfig[difficulty].elo}
+              displayName={activeBot.name}
+              elo={activeBot.elo}
               showDialogue={true}
               autoTauntInterval={null}
             />
@@ -544,20 +517,19 @@ export default function CaroGame({ onBack }) {
               }`}>
                 {matchResult.eloChange > 0 ? `+${matchResult.eloChange}` : matchResult.eloChange} Elo (Hiện tại: {matchResult.newElo})
               </span>
+              {matchResult.newStreak > 1 && (
+                <span className="text-[11px] text-amber-400 font-bold block mt-0.5">
+                  🔥 Chuỗi Thắng: {matchResult.newStreak}
+                </span>
+              )}
             </div>
 
             <div className="flex gap-2 w-full mt-2">
               <button
                 onClick={() => startNewGame(difficulty)}
-                className="flex-1 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs transition-colors cursor-pointer"
+                className="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs transition-colors cursor-pointer"
               >
-                Chơi lại
-              </button>
-              <button
-                onClick={() => setViewMode('menu')}
-                className="flex-1 py-2.5 rounded-xl bg-[#1b1e2a] hover:bg-[#222635] text-slate-300 font-bold text-xs transition-colors cursor-pointer"
-              >
-                Menu
+                Chơi Ván Mới
               </button>
             </div>
           </div>

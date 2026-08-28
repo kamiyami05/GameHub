@@ -1,83 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import Navbar from '@/components/Navbar';
-import Lobby from '@/components/Lobby';
-import CaroGame from '@/components/CaroGame';
-import Game2048 from '@/components/Game2048';
-import MinesweeperGame from '@/components/MinesweeperGame';
-import AuthModal from '@/components/AuthModal';
-import CoffeeModal from '@/components/CoffeeModal';
+import React, { useState } from 'react';
 import AnimatedBackground from '@/components/AnimatedBackground';
-import { useAuthStore } from '@/store/authStore';
-import { audio } from '@/lib/audio';
+import Navbar from '@/components/Navbar';
+import CaroGame from '@/components/CaroGame';
+import CharacterSelectModal from '@/components/CharacterSelectModal';
+import CoffeeModal from '@/components/CoffeeModal';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState('lobby'); // 'lobby' | 'caro' | '2048' | 'minesweeper'
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [isCoffeeOpen, setIsCoffeeOpen] = useState(false);
-
-  const { initialize } = useAuthStore();
-
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
-
-  const handleNavigate = (screen) => {
-    audio.playClick();
-    setCurrentScreen(screen);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const bgTheme = currentScreen === 'caro' 
-    ? 'caro' 
-    : currentScreen === '2048' 
-      ? '2048' 
-      : currentScreen === 'minesweeper' 
-        ? 'minesweeper' 
-        : 'lobby';
+  const [showCharModal, setShowCharModal] = useState(false);
+  const [showCoffeeModal, setShowCoffeeModal] = useState(false);
 
   return (
-    <div className="w-full max-w-6xl min-h-screen flex flex-col items-center px-4 sm:px-6 lg:px-8 py-4 sm:py-6 mx-auto font-sans relative">
-      {/* Dynamic Animated Ambient Background */}
-      <AnimatedBackground theme={bgTheme} />
+    <div className="relative min-h-screen text-slate-100 flex flex-col items-center justify-between font-sans selection:bg-sky-500/30">
+      {/* Calm Ambient Background */}
+      <AnimatedBackground />
 
-      {/* Top Header Navbar - ONLY SHOWN ON LOBBY (HOME) */}
-      {currentScreen === 'lobby' && (
+      {/* Main Container */}
+      <div className="w-full max-w-6xl px-3 sm:px-6 py-3 sm:py-5 flex-1 flex flex-col">
+        {/* Top Navbar */}
         <Navbar
-          onNavigate={handleNavigate}
-          onOpenAuth={() => setIsAuthOpen(true)}
-          onOpenCoffee={() => { audio.playClick(); setIsCoffeeOpen(true); }}
+          onOpenCharacterSelect={() => setShowCharModal(true)}
+          onOpenCoffee={() => setShowCoffeeModal(true)}
         />
-      )}
 
-      {/* Main View Content Area */}
-      <main className="w-full flex-1 flex flex-col items-center justify-start">
-        {currentScreen === 'lobby' && (
-          <Lobby onSelectGame={handleNavigate} />
-        )}
+        {/* Dedicated Caro Game Arena */}
+        <main className="flex-1 flex flex-col justify-center">
+          <CaroGame
+            onOpenCharacterSelect={() => setShowCharModal(true)}
+          />
+        </main>
+      </div>
 
-        {currentScreen === 'caro' && (
-          <CaroGame onBack={() => handleNavigate('lobby')} />
-        )}
-
-        {currentScreen === '2048' && (
-          <Game2048 onBack={() => handleNavigate('lobby')} />
-        )}
-
-        {currentScreen === 'minesweeper' && (
-          <MinesweeperGame onBack={() => handleNavigate('lobby')} />
-        )}
-      </main>
-
-      {/* Auth Modal (Google & Email) */}
-      <AuthModal
-        isOpen={isAuthOpen}
-        onClose={() => setIsAuthOpen(false)}
+      {/* Character Selection Modal */}
+      <CharacterSelectModal
+        isOpen={showCharModal}
+        onClose={() => setShowCharModal(false)}
       />
 
-      {/* Buy Me a Coffee Modal */}
+      {/* Coffee Donation Modal */}
       <CoffeeModal
-        isOpen={isCoffeeOpen}
-        onClose={() => setIsCoffeeOpen(false)}
+        isOpen={showCoffeeModal}
+        onClose={() => setShowCoffeeModal(false)}
       />
     </div>
   );

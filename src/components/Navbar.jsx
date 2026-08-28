@@ -1,39 +1,42 @@
 import React, { useState } from 'react';
-import { Volume2, VolumeX, Coffee } from 'lucide-react';
+import { Volume2, VolumeX, Coffee, Sparkles } from 'lucide-react';
 import { audio } from '@/lib/audio';
-import { useAuthStore } from '@/store/authStore';
+import { usePlayerStore, CHARACTERS, getRankInfo } from '@/store/playerStore';
 
-export default function Navbar({ onNavigate, onOpenAuth, onOpenCoffee }) {
-  const { profile } = useAuthStore();
+export default function Navbar({ onOpenCharacterSelect, onOpenCoffee }) {
+  const { characterId, username, elo, winStreak } = usePlayerStore();
   const [sfxOn, setSfxOn] = useState(!audio.isMuted);
+
+  const charInfo = CHARACTERS[characterId] || CHARACTERS.panda;
+  const rankInfo = getRankInfo(elo);
 
   const toggleSfx = () => {
     const on = audio.toggleSFX();
     setSfxOn(on);
   };
 
-  const isImageAvatar = profile?.avatar_url && (
-    profile.avatar_url.startsWith('http://') ||
-    profile.avatar_url.startsWith('https://') ||
-    profile.avatar_url.startsWith('/') ||
-    profile.avatar_url.startsWith('data:')
-  );
-
   return (
-    <header className="w-full flex items-center justify-between px-3 sm:px-5 py-2.5 bg-[#14161f]/80 backdrop-blur-md border border-[#232734] rounded-2xl mb-6 text-xs">
+    <header className="w-full flex items-center justify-between px-3 sm:px-5 py-2.5 bg-[#14161f]/85 backdrop-blur-md border border-[#232734] rounded-2xl mb-4 text-xs">
       {/* Brand Logo */}
-      <button 
-        onClick={() => { audio.playClick(); onNavigate('lobby'); }}
-        className="flex items-center gap-2 cursor-pointer select-none text-left"
-      >
-        <span className="text-base">🎮</span>
-        <span className="font-bold text-slate-100 text-sm tracking-tight">
-          ARCADE<span className="text-sky-400">.</span>
-        </span>
-      </button>
+      <div className="flex items-center gap-2 select-none">
+        <span className="text-base">⚔️</span>
+        <div className="flex flex-col">
+          <span className="font-black text-slate-100 text-sm tracking-tight leading-none">
+            CARO<span className="text-sky-400">.AI</span>
+          </span>
+        </div>
+      </div>
 
       {/* Controls & Profile */}
       <div className="flex items-center gap-2 shrink-0">
+        {/* Win Streak Indicator */}
+        {winStreak > 1 && (
+          <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold font-mono text-xs">
+            <span>🔥</span>
+            <span>{winStreak} Chuỗi Thắng</span>
+          </div>
+        )}
+
         {/* Coffee Button */}
         <button
           onClick={onOpenCoffee}
@@ -57,29 +60,22 @@ export default function Navbar({ onNavigate, onOpenAuth, onOpenCoffee }) {
           )}
         </button>
 
-        {/* Profile Pill */}
+        {/* Player Profile & Character Switch Button */}
         <button
-          onClick={onOpenAuth}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#1b1e2a] hover:bg-[#222635] border border-[#282d3d] hover:border-slate-600 text-slate-200 transition-colors cursor-pointer max-w-[120px] sm:max-w-[160px]"
+          onClick={onOpenCharacterSelect}
+          className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-[#1b1e2a] hover:bg-[#222635] border border-[#282d3d] hover:border-sky-500/50 text-slate-200 transition-colors cursor-pointer"
+          title="Đổi nhân vật & thông tin"
         >
-          {isImageAvatar ? (
-            <img 
-              src={profile.avatar_url} 
-              alt="" 
-              className="w-5 h-5 rounded-full object-cover shrink-0" 
-            />
-          ) : profile?.avatar_url ? (
-            <span className="w-5 h-5 rounded-full bg-[#0c0d12] flex items-center justify-center text-xs shrink-0 select-none">
-              {profile.avatar_url}
+          <span className="text-base shrink-0">{charInfo.icon}</span>
+          <div className="flex flex-col text-left max-w-[90px] sm:max-w-[120px]">
+            <span className="font-bold text-slate-200 text-xs truncate leading-tight">
+              {username || 'Kỳ Thủ'}
             </span>
-          ) : (
-            <span className="w-5 h-5 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center text-[10px] font-bold shrink-0">
-              {profile?.username?.charAt(0)?.toUpperCase() || 'K'}
+            <span className="text-[10px] font-mono font-semibold" style={{ color: rankInfo.color }}>
+              {elo} Elo
             </span>
-          )}
-          <span className="font-semibold text-slate-200 truncate text-xs">
-            {profile?.username || 'Khách'}
-          </span>
+          </div>
+          <Sparkles className="w-3 h-3 text-slate-500 hover:text-sky-400 shrink-0" />
         </button>
       </div>
     </header>
